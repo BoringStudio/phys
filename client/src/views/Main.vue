@@ -1,12 +1,11 @@
 <template>
-  <div class="page-main">
-    Hello world
-  </div>
+  <div class="main-page">Hello world</div>
 </template>
+
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 
 @Component
-export default class Main extends Vue {}
+export default class MainPage extends Vue {}
 </script>

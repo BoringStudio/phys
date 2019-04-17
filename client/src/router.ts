@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Main from './views/Main.vue';
+import MainPage from './views/Main.vue';
+
+const loginPage = () => import('@/views/Login.vue');
 
 Vue.use(Router);
 
@@ -11,7 +13,18 @@ export default new Router({
     {
       path: '/',
       name: 'main',
-      component: Main
+      component: MainPage,
+      props: {
+        layout: 'default'
+      }
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: loginPage,
+      props: {
+        layout: 'simple-window'
+      }
     }
   ]
 });
