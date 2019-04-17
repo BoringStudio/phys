@@ -16,6 +16,9 @@
     "max-classes-per-file": false,
     "no-shadowed-variable": false,
     "no-console": false,
-    "no-empty-interface": false
+    "no-empty-interface": false,
+    "variable-name": {
+      "options": "allow-leading-underscore"
+    }
   }
 }
