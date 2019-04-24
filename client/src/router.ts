@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+
 import MainPage from './views/Main.vue';
+import LogPage from '@/views/Log.vue';
 
 const loginPage = () => import('@/views/Login.vue');
 
@@ -13,10 +15,12 @@ export default new Router({
     {
       path: '/',
       name: 'main',
-      component: MainPage,
-      props: {
-        layout: 'default'
-      }
+      component: MainPage
+    },
+    {
+      path: '/log',
+      name: 'log',
+      component: LogPage
     },
     {
       path: '/login',
