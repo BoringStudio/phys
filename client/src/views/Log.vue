@@ -1,39 +1,58 @@
 <!-- BEGIN TEMPLATE -->
 <template>
   <div class="log-page">
-    <b-row>
-      <b-col md="3" class="students-list">
+    <b-row class="m-0">
+      <b-col md="3" class="students-list p-0">
         <div class="title">Студенты</div>
-        <b-input class="search" placeholder="Поиск студента..."></b-input>
+        <b-input v-model="filterString" class="search" placeholder="Поиск студента..."></b-input>
         <div class="items-container">
-          <div class="item" v-for="(student, index) in students" :key="`student-${index}`">
-            {{ student.fullName }} - {{ student.group }}
-          </div>
+          <div
+            class="item"
+            v-for="(student, index) in filteredStudents"
+            :key="`student-${index}`"
+          >{{ student.fullName }} - {{ student.group }}</div>
         </div>
       </b-col>
-      <b-col md="9">
+      <b-col md="9" class="p-0">
         <div class="tabs">
           <div class="tab">Расписание</div>
+          <div class="tab">Нормативы</div>
+          <div class="tab">Инфо</div>
         </div>
         <div class="marks-table">
           <div class="title">
-            <template v-for="(semestrModule, moduleindex) in modules">
-              <div class="item" v-for="(week, weekIndex) in semestrModule.weeks" :key="`week-${moduleindex}-${weekIndex}`">
-                {{ week | moment('DD.MM') }}
-              </div>
-              <div class="item">
-                <b>M {{ moduleindex + 1 }}</b>
+            <template v-for="(semestrModule, moduleIndex) in moduleWeeks">
+              <div
+                class="item"
+                v-for="(week, weekIndex) in semestrModule.dates"
+                :key="`week-${moduleIndex}-${weekIndex}`"
+              >{{ week | moment('DD.MM') }}</div>
+              <div class="item module" :key="`title-module-${moduleIndex}`">
+                <b>M {{ moduleIndex + 1 }}</b>
               </div>
             </template>
+            <div class="item module">Баллы</div>
           </div>
           <div class="rows-container">
-            <div class="marks-row" v-for="(student, studentIndex) in students" :key="`student-row-${studentIndex}`">
-              <template v-for="(semestrModule, moduleindex) in modules">
-                <div class="item" v-for="(week, markIndex) in semestrModule.weeks" :key="`mark-${studentIndex}-${moduleindex}-${markIndex}`">
-                  <b-form-select :options="markOptions"></b-form-select>
+            <div
+              class="marks-row"
+              v-for="(student, studentIndex) in filteredStudents"
+              :key="`student-row-${studentIndex}`"
+            >
+              <template v-for="(semestrModule, moduleindex) in student.modules">
+                <div
+                  class="item"
+                  v-for="(mark, markIndex) in semestrModule.marks"
+                  :key="`mark-${studentIndex}-${moduleindex}-${markIndex}`"
+                >
+                  <b-form-select v-model="mark.value" :options="markOptions"></b-form-select>
                 </div>
-                <div class="item"></div>
+                <div
+                  class="item module"
+                  :key="`marks-module-${studentIndex}-${moduleindex}`"
+                >{{ semestrModule.summ }}</div>
               </template>
+              <div class="item module">{{ student.modules.reduce((s, v) => s + v.summ, 0) }}</div>
             </div>
           </div>
         </div>
@@ -57,7 +76,14 @@ class Student {
 
   public group: string;
 
-  constructor(surname: string, name: string, middleName: string, group: string) {
+  public modules: Module[] = [];
+
+  constructor(
+    surname: string,
+    name: string,
+    middleName: string,
+    group: string
+  ) {
     this.surname = surname;
     this.name = name;
     this.middleName = middleName;
@@ -69,54 +95,134 @@ class Student {
   }
 }
 
-class ModuleItem {
-
-}
+class ModuleItem {}
 
 class Module {
-  public id: number;
-  public weeks: Date[] = [];
+  public position: number;
+  public marks: Array<{ value: MarkType | null }> = [];
 
-  constructor(id: number) {
-    this.id = id;
+  constructor(position: number) {
+    this.position = position;
   }
+
+  public get summ() {
+    return this.marks.reduce(
+      (sum, mark) =>
+        sum + (mark.value == null ? 0 : Module.markWeight(mark.value)),
+      0
+    );
+  }
+
+  public static markWeight(mark: MarkType) {
+    switch (mark) {
+      case MarkType.Schedule:
+        return 2.5;
+      case MarkType.OutOfSchedule:
+        return 2;
+      case MarkType.Skip:
+        return 0;
+      case MarkType.TrustedSkip:
+        return 2.5;
+      case MarkType.Ill:
+        return 2;
+      case MarkType.Retrieval:
+        return 2;
+    }
+  }
+}
+
+enum MarkType {
+  Schedule,
+  OutOfSchedule,
+  Skip,
+  TrustedSkip,
+  Ill,
+  Retrieval
 }
 
 @Component
 export default class LogPage extends Vue {
+  private filterString: string = '';
+
+  private moduleWeeks: Array<{ dates: Date[] }> = [];
+
   private modules: Module[] = [];
   private students: Student[] = [];
 
   private markOptions = [
     { value: null, text: '' },
-    { value: 1, text: 'V' },
-    { value: 2, text: 'W' },
-    { value: 3, text: 'Н' },
-    { value: 4, text: 'У' },
-    { value: 5, text: 'Б' },
-    { value: 6, text: 'О' },
+    { value: MarkType.Schedule, text: 'V' },
+    { value: MarkType.OutOfSchedule, text: 'W' },
+    { value: MarkType.Skip, text: 'Н' },
+    { value: MarkType.TrustedSkip, text: 'У' },
+    { value: MarkType.Ill, text: 'Б' },
+    { value: MarkType.Retrieval, text: 'О' }
   ];
 
   public mounted() {
     const septemberBegin = moment('11.02.2019', 'DD.MM.YYYY');
 
+    const defaultModules: Module[] = [];
+
     let week = 0;
     for (let i = 0; i < 3; ++i) {
-      const semestrModule = new Module(i);
+      const dates: Date[] = [];
 
-      for (let j = week; j < (week + 6) && j < 15; ++j) {
-        semestrModule.weeks.push(new Date(septemberBegin.clone().add(j, 'weeks').toDate()));
+      let j = week;
+      for (; j < week + 6 && j < 15; ++j) {
+        dates.push(
+          new Date(
+            septemberBegin
+              .clone()
+              .add(j, 'weeks')
+              .toDate()
+          )
+        );
       }
 
-      this.modules.push(semestrModule);
+      const newModule = new Module(i + 1);
+      newModule.marks = Array.apply(null, Array(j - week)).map(() => ({
+        value: null
+      }));
+      defaultModules.push(newModule);
+
+      this.moduleWeeks.push({ dates });
 
       week += 6;
     }
 
-    const sampleStudent = new Student('Иванов', 'Иван', 'Иванович', 'ИВБО-01-16');
     for (let i = 0; i < 20; ++i) {
+      const sampleStudent = new Student(
+        'Иванов',
+        'Иван',
+        'Иванович',
+        `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`
+      );
+      sampleStudent.modules = defaultModules.map((m) => {
+        const res = new Module(m.position);
+        res.marks = m.marks.map((v) => ({ value: v.value }));
+        return res;
+      });
+
       this.students.push(sampleStudent);
     }
+  }
+
+  public get filteredStudents() {
+    return this.students.filter((s) => {
+      if (this.filterString.length == 0) {
+        return true;
+      }
+
+      const words = this.filterString.toLowerCase().split(' ');
+      return words.every(
+        (w) =>
+          s.fullName.toLowerCase().includes(w) ||
+          s.group.toLowerCase().includes(w)
+      );
+
+      return false;
+    });
   }
 }
 </script>
@@ -125,6 +231,18 @@ export default class LogPage extends Vue {
 
 <!-- BEGIN STYLE -->
 <style lang="scss">
+.item-centered {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+$title-color: #b1bed5;
+$mark-color: white;
+$module-color: #b1bed5;
+$summ-color: #bfd8d5;
+
 .log-page {
   .students-list {
     display: flex;
@@ -134,10 +252,21 @@ export default class LogPage extends Vue {
       height: 3em;
       padding: 5px;
       font-weight: bold;
+
+      @extend .item-centered;
+      align-items: flex-start;
+
+      background-color: $title-color;
     }
 
     .search {
       height: 3em;
+      border-radius: 0;
+      border: none;
+
+      &:focus {
+        box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
+      }
     }
 
     .items-container {
@@ -146,13 +275,11 @@ export default class LogPage extends Vue {
         height: 3em;
         padding: 5px;
 
-        display: flex;
-        flex-direction: column;
-        justify-items: center;
-        justify-content: center;
+        @extend .item-centered;
+        align-items: flex-start;
 
-        &:nth-child(even) {
-          background-color: rgba(0, 0, 0, 0.075);
+        &:nth-child(odd) {
+          background-color: darken($mark-color, 7.5);
         }
       }
     }
@@ -160,24 +287,38 @@ export default class LogPage extends Vue {
 
   .tabs {
     height: 3em;
+
+    display: flex;
+    flex-direction: row;
+
+    background-color: $title-color;
+
+    .tab {
+      padding: 10px;
+      @extend .item-centered;
+    }
   }
 
   .marks-table {
     .title {
       display: flex;
       flex-direction: row;
-      
 
       .item {
         width: 3.5em;
         height: 3em;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        @extend .item-centered;
+
+        &.module {
+          background-color: $module-color;
+        }
 
         &:nth-child(odd) {
-          background-color: rgba(0, 0, 0, 0.075);
+          background-color: darken($mark-color, 7.5);
+
+          &.module {
+            background-color: darken($module-color, 7.5);
+          }
         }
       }
     }
@@ -193,18 +334,60 @@ export default class LogPage extends Vue {
 
         .item {
           width: 3.5em;
+          @extend .item-centered;
+
+          font-weight: bold;
+
+          background-color: $mark-color;
+          &.module {
+            background-color: $module-color;
+          }
 
           .custom-select {
-            margin: 1px;
             height: 3em;
 
             padding-right: 0px;
             border-radius: 0px;
 
+            border: none;
             background-position: right 5px bottom 50%;
+            transition: none;
 
+            &:hover,
             &:focus {
-              box-shadow: none;
+              transition: none;
+              box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
+            }
+          }
+        }
+
+        &:nth-child(odd) {
+          .item:nth-child(odd),
+          .item:nth-child(odd) .custom-select {
+            background-color: darken($mark-color, 14);
+
+            &.module {
+              background-color: darken($module-color, 7.5);
+            }
+          }
+
+          .item:nth-child(even),
+          .item:nth-child(even) .custom-select {
+            background-color: darken($mark-color, 7.5);
+
+            &.module {
+              background-color: darken($module-color, 7.5);
+            }
+          }
+        }
+
+        &:nth-child(even) {
+          .item:nth-child(odd),
+          .item:nth-child(odd) .custom-select {
+            background-color: darken($mark-color, 7.5);
+
+            &.module {
+              background-color: $module-color;
             }
           }
         }
