@@ -1,25 +1,48 @@
 <!-- BEGIN TEMPLATE -->
 <template>
   <div class="log-page">
+    <div class="title noselect">
+      <b-row class="h-100">
+        <b-col>
+          <b-row class="h-100">
+            <b-col cols="auto" class="mr-auto my-auto">
+              <b-button variant="primary" class="ml-2" @click="$router.push('/')">Назад</b-button>
+            </b-col>
+            <b-col cols="auto" class="my-auto">{{ getLessonInstanceTitle() }}</b-col>
+          </b-row>
+        </b-col>
+        <b-col>
+          <div class="tabs">
+            <div class="tab" :class="getTabClass('schedule')" @click="state = 'schedule'">Расписание</div>
+            <div class="tab" :class="getTabClass('tests')" @click="state = 'tests'">Нормативы</div>
+            <div class="tab" :class="getTabClass('info')" @click="state = 'info'">Инфо</div>
+          </div>
+        </b-col>
+      </b-row>
+    </div>
+
     <div class="wrapper">
       <div class="students-list">
-        <div class="title noselect">Студенты</div>
         <b-input v-model="filterString" class="search" placeholder="Поиск студента..."></b-input>
         <div class="items-container">
           <div
             class="item"
             v-for="(student, index) in filteredStudents"
             :key="`student-${index}`"
-          >{{ student.fullName }} - {{ student.group }}</div>
+            @click="studentModal.show(student)"
+          >
+            <b-row class="w-100">
+              <b-col cols="8" class="my-auto">{{ student.fullName }}</b-col>
+              <b-col cols="4">{{ student.group }}</b-col>
+            </b-row>
+          </div>
+
+          <div class="item">
+            <b-button variant="success" class="w-100" @click="addStudent">Добавить студента</b-button>
+          </div>
         </div>
       </div>
       <div class="tables">
-        <div class="tabs noselect">
-          <div class="tab" :class="getTabClass('schedule')" @click="state = 'schedule'">Расписание</div>
-          <div class="tab" :class="getTabClass('tests')" @click="state = 'tests'">Нормативы</div>
-          <div class="tab" :class="getTabClass('info')" @click="state = 'info'">Инфо</div>
-        </div>
-
         <!-- BEGIN MARKS TABLE -->
         <div class="schedule-table" v-if="state === 'schedule'">
           <div class="title">
@@ -57,11 +80,12 @@
               </template>
               <div class="item module">{{ student.modules.reduce((s, v) => s + v.summ, 0) }}</div>
             </div>
+            <div class="items-row"></div>
           </div>
         </div>
         <!-- END MARKS TABLE -->
 
-        <!-- BEGIN MARKS TABLE -->
+        <!-- BEGIN TESTS TABLE -->
         <div class="tests-table" v-else-if="state === 'tests'">
           <div class="title">
             <template v-for="(test, testIndex) in tests">
@@ -86,9 +110,11 @@
             </div>
           </div>
         </div>
-        <!-- END MARKS TABLE -->
+        <!-- END TESTS TABLE -->
       </div>
     </div>
+
+    <student-modal ref="student-modal"/>
   </div>
 </template>
 <!-- END TEMPLATE -->
@@ -97,122 +123,24 @@
 <!-- BEGIN SCRIPT -->
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-
 import moment from 'moment-timezone';
 
-class Student {
-  public surname: string;
-  public name: string;
-  public middleName: string;
+import StudentModal from '@/components/StudentModal.vue';
 
-  public group: string;
-
-  public modules: Module[] = [];
-
-  public testMarks: Array<{ value: number | null }> = [];
-
-  constructor(
-    surname: string,
-    name: string,
-    middleName: string,
-    group: string
-  ) {
-    this.surname = surname;
-    this.name = name;
-    this.middleName = middleName;
-    this.group = group;
-  }
-
-  public get fullName(): string {
-    return `${this.surname} ${this.name} ${this.middleName}`;
-  }
-}
+import { Module, MarkType } from '@/model/Module';
+import { Student, HealthGroup } from '@/model/Student';
+import { Test } from '@/model/Test';
 
 type State = 'schedule' | 'tests' | 'info';
 
-class Module {
-  public position: number;
-  public marks: Array<{ value: MarkType | null }> = [];
-
-  constructor(position: number) {
-    this.position = position;
+@Component({
+  components: {
+    StudentModal
   }
-
-  public get summ() {
-    return this.marks.reduce(
-      (sum, mark) =>
-        sum + (mark.value == null ? 0 : Module.markWeight(mark.value)),
-      0
-    );
-  }
-
-  public static markWeight(mark: MarkType) {
-    switch (mark) {
-      case MarkType.Schedule:
-        return 2.5;
-      case MarkType.OutOfSchedule:
-        return 2;
-      case MarkType.Skip:
-        return 0;
-      case MarkType.TrustedSkip:
-        return 2.5;
-      case MarkType.Ill:
-        return 2;
-      case MarkType.Retrieval:
-        return 2;
-    }
-  }
-}
-
-enum MarkType {
-  Schedule,
-  OutOfSchedule,
-  Skip,
-  TrustedSkip,
-  Ill,
-  Retrieval
-}
-
-class Test {
-  public name: string;
-  public grades: number[] = [];
-  public direction: 'min' | 'max' = 'max';
-
-  constructor(name: string) {
-    this.name = name;
-  }
-
-  public convert(value: number): number {
-    if (this.grades.length !== 5) {
-      throw 'Each test must contain 5 grades!';
-    }
-
-    if (this.direction === 'max') {
-      if (value < this.grades[0]) {
-        return 0;
-      }
-      for (let i = 0; i < 4; ++i) {
-        if (value >= this.grades[i] && value < this.grades[i + 1]) {
-          return i + 1;
-        }
-      }
-      return 5;
-    } else {
-      if (value > this.grades[0]) {
-        return 0;
-      }
-      for (let i = 0; i < 4; ++i) {
-        if (value <= this.grades[i] && value > this.grades[i + 1]) {
-          return i + 1;
-        }
-      }
-      return 5;
-    }
-  }
-}
-
-@Component
+})
 export default class LogPage extends Vue {
+  private studentModal!: StudentModal;
+
   private filterString: string = '';
 
   private moduleWeeks: Array<{ dates: Date[] }> = [];
@@ -235,6 +163,12 @@ export default class LogPage extends Vue {
   private state: State = 'schedule';
 
   public mounted() {
+    this.studentModal = this.$refs['student-modal'] as StudentModal;
+    this.studentModal.$on('submit', (student: Student) => {
+      this.students.push(student);
+      this.studentModal.setVisible(false);
+    });
+
     const septemberBegin = moment('11.02.2019', 'DD.MM.YYYY');
 
     const defaultModules: Module[] = [];
@@ -288,12 +222,13 @@ export default class LogPage extends Vue {
 
     this.tests = [shuttleRunning, maraphon, lifts, jumping, lowerLifts];
 
-    for (let i = 0; i < 20; ++i) {
+    for (let i = 0; i < 10; ++i) {
       const sampleStudent = new Student(
         'Иванов',
         'Иван',
         'Иванович',
-        `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`
+        `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`,
+        HealthGroup.First
       );
 
       sampleStudent.modules = defaultModules.map((m) => {
@@ -332,6 +267,20 @@ export default class LogPage extends Vue {
       active: this.state === tab
     };
   }
+
+  private addStudent() {
+    this.studentModal.show(new Student());
+  }
+
+  private getLessonInstanceTitle() {
+    return `${
+      this.$state.currentInstance.lesson
+        ? this.$state.currentInstance.lesson.name
+        : ''
+    } ${this.$state.currentInstance.place}, ${
+      this.$state.currentInstance.type
+    }`;
+  }
 }
 </script>
 <!-- END SCRIPT -->
@@ -339,72 +288,39 @@ export default class LogPage extends Vue {
 
 <!-- BEGIN STYLE -->
 <style lang="scss">
-.item-centered {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+@import '@/styles/general.scss';
 
-$title-color: #b1bed5;
 $mark-color: white;
 $module-color: #b1bed5;
 $summ-color: #bfd8d5;
 
+$students-width: 425px;
+
 .log-page {
   .wrapper {
     min-width: 1000px;
-    overflow-x: scroll;
+    overflow-x: auto;
 
     display: flex;
     flex-direction: row;
-    justify-items: stretch;
   }
 
-  .students-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  & > .title {
+    height: $title-height;
+    font-weight: bold;
 
-    .title {
-      height: 3em;
-      padding: 5px;
-      font-weight: bold;
+    @extend .item-centered;
+    align-items: flex-start;
 
-      @extend .item-centered;
-      align-items: flex-start;
+    background-color: $title-color;
 
-      background-color: $title-color;
-    }
-
-    .search {
-      height: 3em;
-      border-radius: 0;
-      border: none;
-
-      &:focus {
-        box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
-      }
-    }
-
-    .items-container {
-      .item {
-        width: 100%;
-        height: 3em;
-        padding: 5px;
-
-        @extend .item-centered;
-        align-items: flex-start;
-
-        &:nth-child(odd) {
-          background-color: darken($mark-color, 7.5);
-        }
-      }
+    .col:first-child {
+      width: $students-width;
     }
   }
 
   .tabs {
-    height: 3em;
+    height: $title-height;
 
     display: flex;
     flex-direction: row;
@@ -427,8 +343,44 @@ $summ-color: #bfd8d5;
     }
   }
 
+  .students-list {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: $students-width;
+
+    .search {
+      height: $row-height;
+      border-radius: 0;
+      border: none;
+
+      &:focus {
+        box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
+      }
+    }
+
+    .items-container {
+      .item {
+        width: 100%;
+        height: $row-height;
+        padding: 5px;
+
+        @extend .item-centered;
+        align-items: flex-start;
+
+        &:nth-child(odd) {
+          background-color: darken($mark-color, 7.5);
+        }
+
+        &:hover {
+          cursor: pointer;
+          background-color: darken($mark-color, 14);
+        }
+      }
+    }
+  }
+
   .tables {
-    flex: 3;
     width: 100%;
 
     .rows-container {
@@ -438,19 +390,20 @@ $summ-color: #bfd8d5;
 
     .items-row,
     .title {
-      height: 3em;
+      height: $row-height;
       display: flex;
       flex-direction: row;
 
       .item {
         width: 3.5em;
+        height: 100%;
         @extend .item-centered;
 
         font-weight: bold;
 
         .custom-select,
         .form-control {
-          height: 3em;
+          height: $row-height;
 
           padding-right: 0px;
           border-radius: 0px;

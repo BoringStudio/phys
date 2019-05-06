@@ -6,6 +6,8 @@
 
 
 <style lang="scss">
+@import '@/styles/general.scss';
+
 html, body {
   height: 100%;
 }
@@ -17,19 +19,10 @@ html, body {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: $font-color;
 }
 
 .page {
   min-height: 100%;
-}
-
-.noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 </style>

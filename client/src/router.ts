@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-import MainPage from './views/Main.vue';
+import TimetablePage from './views/Timetable.vue';
 import LogPage from '@/views/Log.vue';
 
 const loginPage = () => import('@/views/Login.vue');
@@ -15,7 +15,7 @@ export default new Router({
     {
       path: '/',
       name: 'main',
-      component: MainPage
+      component: TimetablePage
     },
     {
       path: '/log',
