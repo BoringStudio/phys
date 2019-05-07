@@ -29,7 +29,7 @@
             class="item"
             v-for="(student, index) in filteredStudents"
             :key="`student-${index}`"
-            @click="studentModal.show(student)"
+            @click="editStudent(student)"
           >
             <b-row class="w-100">
               <b-col cols="8" class="my-auto">{{ student.fullName }}</b-col>
@@ -132,6 +132,7 @@ import { Student, HealthGroup } from '@/model/Student';
 import { Test } from '@/model/Test';
 
 type State = 'schedule' | 'tests' | 'info';
+type StudentState = 'add' | 'edit';
 
 @Component({
   components: {
@@ -145,6 +146,7 @@ export default class LogPage extends Vue {
 
   private moduleWeeks: Array<{ dates: Date[] }> = [];
 
+  private tests: Test[] = [];
   private modules: Module[] = [];
   private students: Student[] = [];
 
@@ -158,20 +160,21 @@ export default class LogPage extends Vue {
     { value: MarkType.Retrieval, text: 'О' }
   ];
 
-  private tests: Test[] = [];
-
   private state: State = 'schedule';
+  private studentState: StudentState = 'edit';
 
   public mounted() {
     this.studentModal = this.$refs['student-modal'] as StudentModal;
     this.studentModal.$on('submit', (student: Student) => {
-      this.students.push(student);
+      if (this.studentState == 'add') {
+        this.students.push(student);
+        this.fillStudent(student);
+      }
+
       this.studentModal.setVisible(false);
     });
 
     const septemberBegin = moment('11.02.2019', 'DD.MM.YYYY');
-
-    const defaultModules: Module[] = [];
 
     let week = 0;
     for (let i = 0; i < 3; ++i) {
@@ -193,7 +196,7 @@ export default class LogPage extends Vue {
       newModule.marks = Array.apply(null, Array(j - week)).map(() => ({
         value: null
       }));
-      defaultModules.push(newModule);
+      this.modules.push(newModule);
 
       this.moduleWeeks.push({ dates });
 
@@ -230,19 +233,23 @@ export default class LogPage extends Vue {
         `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`,
         HealthGroup.First
       );
-
-      sampleStudent.modules = defaultModules.map((m) => {
-        const res = new Module(m.position);
-        res.marks = m.marks.map((v) => ({ value: v.value }));
-        return res;
-      });
-
-      sampleStudent.testMarks = Array.apply(null, Array(this.tests.length)).map(
-        () => ({ value: null })
-      );
+      
+      this.fillStudent(sampleStudent);
 
       this.students.push(sampleStudent);
     }
+  }
+
+  private fillStudent(student: Student) {
+    student.modules = this.modules.map((m) => {
+      const res = new Module(m.position);
+      res.marks = m.marks.map((v) => ({ value: v.value }));
+      return res;
+    });
+
+    student.testMarks = Array.apply(null, Array(this.tests.length)).map(() => ({
+      value: null
+    }));
   }
 
   public get filteredStudents() {
@@ -269,7 +276,13 @@ export default class LogPage extends Vue {
   }
 
   private addStudent() {
+    this.studentState = 'add';
     this.studentModal.show(new Student());
+  }
+
+  private editStudent(student: Student) {
+    this.studentState = 'edit';
+    this.studentModal.show(student);
   }
 
   private getLessonInstanceTitle() {

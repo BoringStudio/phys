@@ -1,11 +1,12 @@
 <!-- TEMPALTE BEGIN -->
 <template>
-  <div class="timetable-page">
-    <div class="title"></div>
-
+  <div class="page timetable-page">
     <div class="wrapper">
+      <h3>Расписание</h3>
+      <hr>
+
       <b-row>
-        <b-col cols="4" v-for="(day, dayIndex) in days" :key="`day-${dayIndex}`">
+        <b-col sm="12" lg="6" xl="4" v-for="(day, dayIndex) in days" :key="`day-${dayIndex}`">
           <div class="day">
             <div class="title">{{ day.name }}</div>
             <div class="lessons-list">
@@ -120,9 +121,7 @@ $border-color: rgba(0, 0, 0, 0.14);
   }
 
   .wrapper {
-    position: relative;
-    width: 1500px;
-    margin: 20px auto;
+    margin: 20px 40px;
   }
 
   .day {
