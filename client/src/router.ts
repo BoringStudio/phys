@@ -26,8 +26,8 @@ export default new Router({
       path: '/login',
       name: 'login',
       component: loginPage,
-      props: {
-        layout: 'simple-window'
+      meta: {
+        noSidebar: true
       }
     }
   ]

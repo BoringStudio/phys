@@ -1,17 +1,18 @@
 <!-- BEGIN TEMPLATE -->
 <template>
-  <div class="log-page">
+  <div class="page log-page">
+    <h3>
+      <b-button variant="primary" class="mr-2" @click="$router.push('/')">Назад</b-button>
+      {{ getLessonInstanceTitle() }}
+    </h3>
+    <hr>
+
     <div class="title noselect">
-      <b-row class="h-100">
-        <b-col>
-          <b-row class="h-100">
-            <b-col cols="auto" class="mr-auto my-auto">
-              <b-button variant="primary" class="ml-2" @click="$router.push('/')">Назад</b-button>
-            </b-col>
-            <b-col cols="auto" class="my-auto">{{ getLessonInstanceTitle() }}</b-col>
-          </b-row>
+      <b-row class="m-0">
+        <b-col class="p-1">
+          <b-button variant="success" class="w-100 h-100" @click="addStudent">Добавить студента</b-button>
         </b-col>
-        <b-col>
+        <b-col class="p-0">
           <div class="tabs">
             <div class="tab" :class="getTabClass('schedule')" @click="state = 'schedule'">Расписание</div>
             <div class="tab" :class="getTabClass('tests')" @click="state = 'tests'">Нормативы</div>
@@ -35,10 +36,6 @@
               <b-col cols="8" class="my-auto">{{ student.fullName }}</b-col>
               <b-col cols="4">{{ student.group }}</b-col>
             </b-row>
-          </div>
-
-          <div class="item">
-            <b-button variant="success" class="w-100" @click="addStudent">Добавить студента</b-button>
           </div>
         </div>
       </div>
@@ -80,7 +77,6 @@
               </template>
               <div class="item module">{{ student.modules.reduce((s, v) => s + v.summ, 0) }}</div>
             </div>
-            <div class="items-row"></div>
           </div>
         </div>
         <!-- END MARKS TABLE -->
@@ -233,7 +229,7 @@ export default class LogPage extends Vue {
         `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`,
         HealthGroup.First
       );
-      
+
       this.fillStudent(sampleStudent);
 
       this.students.push(sampleStudent);
@@ -310,6 +306,8 @@ $summ-color: #bfd8d5;
 $students-width: 425px;
 
 .log-page {
+  padding: 20px 40px;
+
   .wrapper {
     min-width: 1000px;
     overflow-x: auto;
@@ -328,6 +326,7 @@ $students-width: 425px;
     background-color: $title-color;
 
     .col:first-child {
+      flex: none;
       width: $students-width;
     }
   }

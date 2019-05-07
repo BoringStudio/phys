@@ -1,46 +1,44 @@
 <!-- TEMPALTE BEGIN -->
 <template>
   <div class="page timetable-page">
-    <div class="wrapper">
-      <h3>Расписание</h3>
-      <hr>
+    <h3>Расписание</h3>
+    <hr>
 
-      <b-row>
-        <b-col sm="12" lg="6" xl="4" v-for="(day, dayIndex) in days" :key="`day-${dayIndex}`">
-          <div class="day">
-            <div class="title">{{ day.name }}</div>
-            <div class="lessons-list">
-              <b-row
-                class="lesson m-0"
-                v-for="(lesson, lessonIndex) in day.lessons"
-                :key="`lesson-${dayIndex}-${lessonIndex}`"
-              >
-                <b-col class="p-0 item-centered">{{ lesson.name }}</b-col>
-                <b-col class="p-0">
-                  <b-row
-                    class="place m-0"
-                    v-for="(instance, instanceIndex) in lesson.instances"
-                    :key="`lesson-${dayIndex}-${lessonIndex}-${instanceIndex}`"
-                    @click="openLog(instance)"
-                  >
-                    <b-col class="item-centered">{{ instance.place }}</b-col>
-                    <b-col class="item-centered">{{ instance.type }}</b-col>
-                  </b-row>
+    <b-row>
+      <b-col sm="12" lg="6" xl="4" v-for="(day, dayIndex) in days" :key="`day-${dayIndex}`">
+        <div class="day">
+          <div class="title">{{ day.name }}</div>
+          <div class="lessons-list">
+            <b-row
+              class="lesson m-0"
+              v-for="(lesson, lessonIndex) in day.lessons"
+              :key="`lesson-${dayIndex}-${lessonIndex}`"
+            >
+              <b-col class="p-0 item-centered">{{ lesson.name }}</b-col>
+              <b-col class="p-0">
+                <b-row
+                  class="place m-0"
+                  v-for="(instance, instanceIndex) in lesson.instances"
+                  :key="`lesson-${dayIndex}-${lessonIndex}-${instanceIndex}`"
+                  @click="openLog(instance)"
+                >
+                  <b-col class="item-centered">{{ instance.place }}</b-col>
+                  <b-col class="item-centered">{{ instance.type }}</b-col>
+                </b-row>
 
-                  <b-row class="place m-0" v-if="lesson.isEmpty" @click="addLessonInstance(lesson)">
-                    <b-col class="item-centered button-add">
-                      <a-icon icon="plus"/>
-                    </b-col>
-                  </b-row>
-                </b-col>
-              </b-row>
-            </div>
+                <b-row class="place m-0" v-if="lesson.isEmpty" @click="addLessonInstance(lesson)">
+                  <b-col class="item-centered button-add">
+                    <a-icon icon="plus"/>
+                  </b-col>
+                </b-row>
+              </b-col>
+            </b-row>
           </div>
-        </b-col>
-      </b-row>
-    </div>
+        </div>
+      </b-col>
+    </b-row>
 
-    <lesson-instance-modal ref="lesson-instance-modal" />
+    <lesson-instance-modal ref="lesson-instance-modal"/>
   </div>
 </template>
 <!-- TEMPALTE END -->
@@ -68,7 +66,9 @@ export default class TimeTablePage extends Vue {
   private days: Day[] = [];
 
   private mounted() {
-    this.lessonInstanceModal = this.$refs['lesson-instance-modal'] as LessonInstanceModal;
+    this.lessonInstanceModal = this.$refs[
+      'lesson-instance-modal'
+    ] as LessonInstanceModal;
     this.lessonInstanceModal.$on('submit', (lessonInstance: LessonInstance) => {
       if (lessonInstance.lesson) {
         lessonInstance.lesson.instances.push(lessonInstance);
@@ -96,7 +96,7 @@ export default class TimeTablePage extends Vue {
 
     this.$router.push({
       name: 'log'
-    })
+    });
   }
 }
 </script>
@@ -110,6 +110,8 @@ export default class TimeTablePage extends Vue {
 $border-color: rgba(0, 0, 0, 0.14);
 
 .timetable-page {
+  padding: 20px 40px;
+
   & > .title {
     height: $title-height;
     font-weight: bold;
@@ -118,10 +120,6 @@ $border-color: rgba(0, 0, 0, 0.14);
     align-items: flex-start;
 
     background-color: $title-color;
-  }
-
-  .wrapper {
-    margin: 20px 40px;
   }
 
   .day {

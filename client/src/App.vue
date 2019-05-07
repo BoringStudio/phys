@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="layout">
+    <div class="layout" :class="{ nosidebar: $route.meta.noSidebar }">
       <div class="sidebar">
         <div class="title pb-3 mb-3">
           <div>
@@ -13,7 +13,7 @@
         </div>
         <div class="button noselect active">Расписание</div>
         <div class="button noselect">Список студентов</div>
-        <div class="button exit-button noselect">Выход</div>
+        <div class="button exit-button noselect" @click="onExit">Выход</div>
       </div>
 
       <router-view/>
@@ -46,6 +46,12 @@ export default class App extends Vue {
 
   private formatDate(date: Date) {
     return moment(date).format('DD.MM.YYYY');
+  }
+
+  private onExit() {
+    this.$router.push({
+      name: 'login'
+    });
   }
 }
 </script>
@@ -81,6 +87,8 @@ body {
   .sidebar {
     width: $sidebar-width;
     height: 100%;
+
+    flex: none;
     display: flex;
     flex-direction: column;
 
@@ -117,6 +125,12 @@ body {
     .exit-button {
       border-top: 2px solid #d6d6d6;
       margin-top: auto;
+    }
+  }
+
+  &.nosidebar {
+    .sidebar {
+      display: none;
     }
   }
 

@@ -9,7 +9,7 @@
         <b-input class="w-100" type="password"/>
       </b-form-group>
       <b-form-group>
-        <b-button class="w-100">Вход</b-button>
+        <b-button class="w-100" @click="onLogin">Вход</b-button>
       </b-form-group>
     </b-form>
   </div>
@@ -20,7 +20,13 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 @Component
-export default class LoginPage extends Vue {}
+export default class LoginPage extends Vue {
+  private onLogin() {
+    this.$router.replace({
+      name: 'main'
+    });
+  }
+}
 </script>
 
 
@@ -32,9 +38,8 @@ export default class LoginPage extends Vue {}
   align-items: center;
 
   .window {
-    border: 1px solid var(--secondary);
+    border: 1px solid rgba(0, 0, 0, 0.14);
     padding: 20px;
-    border-radius: 0.25rem;
     width: 300px;
 
     h3 {
