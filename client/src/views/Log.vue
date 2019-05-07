@@ -2,7 +2,7 @@
 <template>
   <div class="page log-page">
     <h3>
-      <b-button variant="primary" class="mr-2" @click="$router.push('/')">Назад</b-button>
+      <b-button variant="secondary" class="mr-2" @click="$router.push('/')">Назад</b-button>
       {{ getLessonInstanceTitle() }}
     </h3>
     <hr>

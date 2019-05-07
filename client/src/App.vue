@@ -11,8 +11,27 @@
           </div>
           <div>Иванов Иван Иванович</div>
         </div>
-        <div class="button noselect active">Расписание</div>
-        <div class="button noselect">Список студентов</div>
+        <div
+          class="button noselect"
+          :class="isButtonActive('main')"
+          @click="open('main')"
+        >Расписание</div>
+        <div
+          class="button noselect"
+          :class="isButtonActive('students')"
+          @click="open('students')"
+        >Список студентов</div>
+        <div
+          class="button noselect"
+          :class="isButtonActive('tests')"
+          @click="open('tests')"
+        >Нормативы</div>
+        <div
+          class="button noselect"
+          :class="isButtonActive('classrooms')"
+          @click="open('classrooms')"
+        >Аудитории</div>
+
         <div class="button exit-button noselect" @click="onExit">Выход</div>
       </div>
 
@@ -46,6 +65,16 @@ export default class App extends Vue {
 
   private formatDate(date: Date) {
     return moment(date).format('DD.MM.YYYY');
+  }
+
+  private isButtonActive(route: string) {
+    return {
+      active: this.$route.name === route
+    };
+  }
+
+  private open(route: string) {
+    this.$router.push({ name: route });
   }
 
   private onExit() {
