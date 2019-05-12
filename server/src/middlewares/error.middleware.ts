@@ -1,9 +1,5 @@
 import Koa from 'koa';
-import {
-  Middleware,
-  KoaMiddlewareInterface,
-  InternalServerError
-} from 'routing-controllers';
+import { Middleware, KoaMiddlewareInterface } from 'routing-controllers';
 
 @Middleware({ type: 'before', priority: 100 })
 export class ErrorMiddleware implements KoaMiddlewareInterface {

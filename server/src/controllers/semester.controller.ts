@@ -40,7 +40,6 @@ export class SemestersController {
       const [id] = await this.semesters.create(data);
       return id;
     } catch (e) {
-      console.log(e);
       return;
     }
   }

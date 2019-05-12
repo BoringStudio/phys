@@ -39,7 +39,7 @@ export class LoggingMiddleware implements KoaMiddlewareInterface {
       errorThrown = e;
       logData.errorMessage = e.message;
       logData.errorStack = e.stack;
-      logData.statusCode = e.status || 500;
+      logData.statusCode = e.httpCode || 500;
       if (e.data) {
         logData.data = e.data;
       }
@@ -59,7 +59,7 @@ export class LoggingMiddleware implements KoaMiddlewareInterface {
         `${data.statusCode} ${data.method} ${data.url} - ${data.responseTime}ms`
       );
       if (thrownError) {
-        console.error(thrownError);
+        console.log(thrownError);
       }
     } else if (data.statusCode < 400) {
       process.stdout.write(JSON.stringify(data) + '\n');
