@@ -3,15 +3,20 @@ import {
   Post,
   Body,
   OnUndefined,
-  InternalServerError
+  UnauthorizedError
 } from 'routing-controllers';
 
+import { Length } from 'class-validator';
 import { injector } from '@/server';
+
 import { UsersService } from '@/db/services/users.service';
 
-interface IAuthRequest {
-  login: string;
-  password: string;
+class AuthRequest {
+  @Length(4, 50)
+  public login: string;
+
+  @Length(6, 50)
+  public password: string;
 }
 
 @JsonController()
@@ -21,8 +26,8 @@ export class AuthController {
   ) as UsersService;
 
   @Post('/auth')
-  @OnUndefined(401)
-  public async auth(@Body() data: IAuthRequest) {
+  @OnUndefined(UnauthorizedError)
+  public async auth(@Body() data: AuthRequest) {
     const user = await this.usersService.findByAuthData(
       data.login,
       data.password

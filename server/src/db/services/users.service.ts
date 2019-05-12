@@ -1,15 +1,6 @@
 import knex from 'knex';
 import { Connection } from '../connection';
-import { User } from '../models/User';
-import { userInfo } from 'os';
-
-export interface IUserCreateInfo {
-  login: string;
-  password: string;
-  surname: string;
-  name: string;
-  middlename?: string;
-}
+import { UserCreationInfo } from '../models/User';
 
 export class UsersService {
   private connector: knex;
@@ -41,7 +32,7 @@ export class UsersService {
       .first();
   }
 
-  public createUser(data: IUserCreateInfo) {
+  public createUser(data: UserCreationInfo) {
     return this.connector
       .table('users')
       .insert({
@@ -53,6 +44,6 @@ export class UsersService {
         name: data.name,
         middlename: data.middlename
       })
-      .returning('*');
+      .returning('id');
   }
 }

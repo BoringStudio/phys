@@ -2,15 +2,17 @@ import {
   JsonController,
   Post,
   Body,
-  OnUndefined,
-  InternalServerError,
   Get,
-  Param
+  Param,
+  OnUndefined,
+  NotFoundError,
+  InternalServerError,
+  BadRequestError
 } from 'routing-controllers';
 
 import { injector } from '@/server';
-import { UsersService, IUserCreateInfo } from '@/db/services/users.service';
-import { User } from '@/db/models/User';
+import { UsersService } from '@/db/services/users.service';
+import { User, UserCreationInfo } from '@/db/models/User';
 
 @JsonController()
 export class UsersController {
@@ -29,8 +31,8 @@ export class UsersController {
   }
 
   @Get('/user/:id')
-  @OnUndefined(404)
-  public async getSingleUser(@Param('id') id: number) {
+  @OnUndefined(NotFoundError)
+  public async getSingleUser(@Param('id') id: any) {
     const user = await this.usersService.getSingleUser(id);
 
     if (user == null) {
@@ -42,14 +44,15 @@ export class UsersController {
   }
 
   @Post('/user')
-  public async createUser(@Body() data: IUserCreateInfo) {
-    const user = await this.usersService.createUser(data);
+  @OnUndefined(BadRequestError)
+  public async createUser(@Body() data: UserCreationInfo) {
+    try {
+      const user = await this.usersService.createUser(data);
 
-    if (user == null) {
+      const { password, ...res } = user;
+      return res;
+    } catch (e) {
       return;
     }
-
-    const { password, ...res } = user;
-    return res;
   }
 }

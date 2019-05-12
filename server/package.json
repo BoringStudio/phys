@@ -8,6 +8,7 @@
     "serve": "cross-env NODE_ENV=development nodemon --watch 'src/**/*' -e ts,tsx --exec ts-node -r tsconfig-paths/register src/server.ts"
   },
   "dependencies": {
+    "class-validator": "^0.9.1",
     "dotenv": "^8.0.0",
     "injection-js": "^2.2.1",
     "knex": "^0.16.5",

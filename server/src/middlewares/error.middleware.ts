@@ -11,8 +11,13 @@ export class ErrorMiddleware implements KoaMiddlewareInterface {
     try {
       await next();
     } catch (e) {
-      ctx.body = new InternalServerError('Server error');
-      ctx.status = 500;
+      if (typeof e.name === 'string' && typeof e.httpCode === 'number') {
+        ctx.response.body = { name: e.name };
+        ctx.response.status = e.httpCode;
+      } else {
+        ctx.response.body = { name: 'InternalServerError' };
+        ctx.response.status = 500;
+      }
     }
   }
 }
