@@ -21,17 +21,12 @@ class AuthRequest {
 
 @JsonController()
 export class AuthController {
-  private usersService: UsersService = injector.get(
-    UsersService
-  ) as UsersService;
+  private users: UsersService = injector.get(UsersService);
 
   @Post('/auth')
   @OnUndefined(UnauthorizedError)
   public async auth(@Body() data: AuthRequest) {
-    const user = await this.usersService.findByAuthData(
-      data.login,
-      data.password
-    );
+    const user = await this.users.findByAuthData(data.login, data.password);
 
     if (user == null) {
       return;

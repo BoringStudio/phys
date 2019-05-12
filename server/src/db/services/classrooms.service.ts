@@ -1,10 +1,13 @@
 import knex from 'knex';
 import { Connection } from '../connection';
-import { GroupCreationInfo, GroupEditionInfo } from '../models/Group';
+import {
+  ClassroomCreationInfo,
+  ClassroomEditionInfo
+} from '../models/Classroom';
 
-const groupsTable = 'groups';
+const classroomsTable = 'classrooms';
 
-export class GroupsService {
+export class ClassroomsService {
   private db: knex;
 
   constructor() {
@@ -12,11 +15,11 @@ export class GroupsService {
   }
 
   public getAll() {
-    return this.db(groupsTable).select('*');
+    return this.db(classroomsTable).select('*');
   }
 
   public getSingle(id: number) {
-    return this.db(groupsTable)
+    return this.db(classroomsTable)
       .select('*')
       .where({
         id
@@ -24,16 +27,16 @@ export class GroupsService {
       .first();
   }
 
-  public create(data: GroupCreationInfo) {
-    return this.db(groupsTable)
+  public create(data: ClassroomCreationInfo) {
+    return this.db(classroomsTable)
       .insert({
         name: data.name
       })
       .returning('id');
   }
 
-  public update(data: GroupEditionInfo) {
-    return this.db(groupsTable)
+  public update(data: ClassroomEditionInfo) {
+    return this.db(classroomsTable)
       .update({
         name: data.name
       })
@@ -41,7 +44,7 @@ export class GroupsService {
   }
 
   public remove(id: number) {
-    return this.db(groupsTable)
+    return this.db(classroomsTable)
       .where('id', id)
       .delete();
   }

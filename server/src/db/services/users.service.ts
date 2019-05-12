@@ -2,20 +2,21 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { UserCreationInfo } from '../models/User';
 
+const usersTable = 'users';
+
 export class UsersService {
-  private connector: knex;
+  private db: knex;
 
   constructor() {
-    this.connector = new Connection().knex();
+    this.db = new Connection().knex();
   }
 
-  public getAllUsers() {
-    return this.connector.table('users').select('*');
+  public getAll() {
+    return this.db(usersTable).select('*');
   }
 
-  public getSingleUser(id: number) {
-    return this.connector
-      .table('users')
+  public getSingle(id: number) {
+    return this.db(usersTable)
       .select('*')
       .where({
         id
@@ -24,22 +25,18 @@ export class UsersService {
   }
 
   public findByAuthData(login: string, password: string) {
-    return this.connector
-      .table('users')
+    return this.db(usersTable)
       .select('*')
-      .where('users.login', login)
-      .andWhereRaw('users.password = crypt(?, users.password)', [password])
+      .where('login', login)
+      .andWhereRaw('password = crypt(?, password)', [password])
       .first();
   }
 
-  public createUser(data: UserCreationInfo) {
-    return this.connector
-      .table('users')
+  public create(data: UserCreationInfo) {
+    return this.db(usersTable)
       .insert({
         login: data.login,
-        password: this.connector.raw("crypt(?, gen_salt('bf'))", [
-          data.password
-        ]),
+        password: this.db.raw("crypt(?, gen_salt('bf'))", [data.password]),
         surname: data.surname,
         name: data.name,
         middlename: data.middlename

@@ -6,7 +6,6 @@ import {
   Param,
   OnUndefined,
   NotFoundError,
-  InternalServerError,
   BadRequestError
 } from 'routing-controllers';
 
@@ -16,13 +15,11 @@ import { User, UserCreationInfo } from '@/db/models/User';
 
 @JsonController()
 export class UsersController {
-  private usersService: UsersService = injector.get(
-    UsersService
-  ) as UsersService;
+  private users: UsersService = injector.get(UsersService);
 
   @Get('/users')
-  public async getAllUsers() {
-    const users = await this.usersService.getAllUsers();
+  public async getAll() {
+    const users = await this.users.getAll();
 
     return users.map((user: User) => {
       const { password, ...res } = user;
@@ -32,8 +29,8 @@ export class UsersController {
 
   @Get('/user/:id')
   @OnUndefined(NotFoundError)
-  public async getSingleUser(@Param('id') id: any) {
-    const user = await this.usersService.getSingleUser(id);
+  public async getSingle(@Param('id') id: any) {
+    const user = await this.users.getSingle(id);
 
     if (user == null) {
       return;
@@ -45,10 +42,9 @@ export class UsersController {
 
   @Post('/user')
   @OnUndefined(BadRequestError)
-  public async createUser(@Body() data: UserCreationInfo) {
+  public async create(@Body() data: UserCreationInfo) {
     try {
-      const user = await this.usersService.createUser(data);
-
+      const user = await this.users.create(data);
       const { password, ...res } = user;
       return res;
     } catch (e) {

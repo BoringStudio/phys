@@ -17,30 +17,24 @@ import { AlreadyExistsError } from './errors';
 
 @JsonController()
 export class GroupsController {
-  private groupsService: GroupsService = injector.get(
-    GroupsService
-  ) as GroupsService;
+  private groups: GroupsService = injector.get(GroupsService);
 
   @Get('/groups')
-  public async getAllGroups() {
-    return await this.groupsService.getAllGroups();
+  public async getAll() {
+    return await this.groups.getAll();
   }
 
   @Get('/group/:id')
   @OnUndefined(NotFoundError)
-  public async getSingleGroup(@Param('id') id: any) {
-    if (typeof id !== 'number') {
-      return;
-    }
-
-    return await this.groupsService.getSingleGroup(id);
+  public async getSingle(@Param('id') id: any) {
+    return await this.groups.getSingle(id);
   }
 
   @Post('/group')
   @OnUndefined(AlreadyExistsError)
-  public async createGroup(@Body() data: GroupCreationInfo) {
+  public async create(@Body() data: GroupCreationInfo) {
     try {
-      const [id] = await this.groupsService.createGroup(data);
+      const [id] = await this.groups.create(data);
       return id;
     } catch (e) {
       return;
@@ -49,9 +43,9 @@ export class GroupsController {
 
   @Put('/group')
   @OnUndefined(AlreadyExistsError)
-  public async updateGroup(@Body() data: GroupEditionInfo) {
+  public async update(@Body() data: GroupEditionInfo) {
     try {
-      await this.groupsService.updateGroup(data);
+      await this.groups.update(data);
       return {};
     } catch (e) {
       return;
@@ -59,8 +53,8 @@ export class GroupsController {
   }
 
   @Delete('/group/:id')
-  public async removeGroup(@Param('id') id: any) {
-    await this.groupsService.removeGroup(id);
+  public async remove(@Param('id') id: any) {
+    await this.groups.remove(id);
     return {};
   }
 }
