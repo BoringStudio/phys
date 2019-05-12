@@ -12,7 +12,7 @@ import {
 
 import { injector } from '@/server';
 import { ClassroomsService } from '@/db/services/classrooms.service';
-import { AlreadyExistsError } from './errors';
+import { AlreadyExistsError } from '../errors';
 import {
   ClassroomCreationInfo,
   ClassroomEditionInfo

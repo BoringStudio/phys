@@ -13,7 +13,7 @@ import {
 import { injector } from '@/server';
 import { GroupsService } from '@/db/services/groups.service';
 import { GroupCreationInfo, GroupEditionInfo } from '@/db/models/Group';
-import { AlreadyExistsError } from './errors';
+import { AlreadyExistsError } from '../errors';
 
 @JsonController()
 export class GroupsController {
