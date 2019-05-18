@@ -7,16 +7,27 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  Params
 } from 'routing-controllers';
+import { IsInt } from 'class-validator';
 
 import { injector } from '@/server';
 import { DisciplinesService } from '@/db/services/disciplines.service';
 import { AlreadyExistsError } from '../errors';
 import {
   DisciplineCreationInfo,
-  DisciplineEditionInfo
+  DisciplineEditionInfo,
+  DisciplineTestInfo
 } from '@/db/models/Discipline';
+
+class DisciplineTestParameters {
+  @IsInt()
+  public id: number;
+
+  @IsInt()
+  public testId: number;
+}
 
 @JsonController()
 export class DisciplinesController {
@@ -58,6 +69,28 @@ export class DisciplinesController {
   @Delete('/discipline/:id')
   public async remove(@Param('id') id: any) {
     await this.disciplines.remove(id);
+    return {};
+  }
+
+  @Get('/discipline/:id/tests')
+  public async getTests(@Param('id') id: any) {
+    return await this.disciplines.getTests(id);
+  }
+
+  @Post('/discipline/:id/test')
+  @OnUndefined(AlreadyExistsError)
+  public async addTest(@Param('id') id: any, @Body() data: DisciplineTestInfo) {
+    try {
+      await this.disciplines.addTest(id, data.testId);
+      return {};
+    } catch (e) {
+      return;
+    }
+  }
+
+  @Delete('/discipline/:id/test/:testId')
+  public async removeTest(@Params() params: DisciplineTestParameters) {
+    await this.disciplines.removeTest(params.id, params.testId);
     return {};
   }
 }

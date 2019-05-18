@@ -17,3 +17,8 @@ export class DisciplineEditionInfo {
   @Length(2, 50)
   public name: string;
 }
+
+export class DisciplineTestInfo {
+  @IsInt()
+  public testId: number;
+}

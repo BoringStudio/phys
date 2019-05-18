@@ -2,7 +2,7 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { TestCreationInfo, TestEditionInfo } from '../models/Test';
 
-const testsTable = 'tests';
+export const testsTable = 'tests';
 
 export class TestsService {
   private db: knex;

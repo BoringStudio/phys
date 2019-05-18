@@ -4,8 +4,10 @@ import {
   DisciplineCreationInfo,
   DisciplineEditionInfo
 } from '../models/Discipline';
+import { testsTable } from './tests.service';
 
 const disciplinesTable = 'disciplines';
+const disciplineTestsTable = 'discipline_tests';
 
 export class DisciplinesService {
   private db: knex;
@@ -46,6 +48,33 @@ export class DisciplinesService {
   public remove(id: number) {
     return this.db(disciplinesTable)
       .where('id', id)
+      .delete();
+  }
+
+  public getTests(id: number) {
+    return this.db(disciplineTestsTable)
+      .join(testsTable, (qb) => {
+        qb.on(`${disciplineTestsTable}.test`, `${testsTable}.id`).andOn(
+          `${disciplineTestsTable}.discipline`,
+          this.db.raw('?', [id])
+        );
+      })
+      .select(`${testsTable}.*`);
+  }
+
+  public addTest(disciplineId: number, testId: number) {
+    return this.db(disciplineTestsTable).insert({
+      discipline: disciplineId,
+      test: testId
+    });
+  }
+
+  public removeTest(disciplineId: number, testId: number) {
+    return this.db(disciplineTestsTable)
+      .where({
+        discipline: disciplineId,
+        test: testId
+      })
       .delete();
   }
 }
