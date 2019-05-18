@@ -22,6 +22,7 @@ import { ModulesService } from './db/services/modules.service';
 import { StudentsService } from './db/services/students.service';
 import { TestsService } from './db/services/tests.service';
 import { LessonsService } from './db/services/lessons.service';
+import { MarksService } from './db/services/marks.service';
 
 import { AuthController } from './controllers/auth.controller';
 import { UsersController } from './controllers/users.controller';
@@ -33,6 +34,7 @@ import { ModulesController } from './controllers/modules.controller';
 import { StudentsController } from './controllers/students.controller';
 import { TestsController } from './controllers/tests.controller';
 import { LessonsController } from './controllers/lessons.controller';
+import { MarksController } from './controllers/marks.controller';
 
 import { ErrorMiddleware } from './middlewares/error.middleware';
 import { LoggingMiddleware } from './middlewares/logging.middleware';
@@ -46,7 +48,8 @@ export const injector = ReflectiveInjector.resolveAndCreate([
   ModulesService,
   StudentsService,
   TestsService,
-  LessonsService
+  LessonsService,
+  MarksService
 ]);
 useContainer(Container);
 
@@ -63,7 +66,8 @@ const app: Koa = createKoaServer({
     ModulesController,
     StudentsController,
     TestsController,
-    LessonsController
+    LessonsController,
+    MarksController
   ],
   middlewares: [ErrorMiddleware, LoggingMiddleware]
 });
