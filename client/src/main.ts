@@ -5,9 +5,16 @@ import router from './router';
 import bus from '@/model/Bus';
 import state from '@/model/State';
 
+import axios from 'axios';
+axios.defaults.headers.post['Content-Type'] = 'application/json';
+axios.defaults.baseURL = process.env.VUE_APP_API_URL;
+
 import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-vue/dist/bootstrap-vue.min.css';
+
+import Notifications from 'vue-notification';
+Vue.use(Notifications);
 
 import VueMoment from 'vue-moment';
 import 'moment/locale/ru';

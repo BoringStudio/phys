@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <notifications/>
     <div class="layout" :class="{ nosidebar: $route.meta.noSidebar }">
       <div class="sidebar">
         <div class="title pb-3 mb-3">
@@ -78,6 +79,8 @@ export default class App extends Vue {
   }
 
   private onExit() {
+    this.$state.userManager.unauth();
+
     this.$router.push({
       name: 'login'
     });

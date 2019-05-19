@@ -21,6 +21,6 @@ export class AuthMiddleware implements KoaMiddlewareInterface {
       return;
     }
 
-    return next();
+    return await next();
   }
 }
