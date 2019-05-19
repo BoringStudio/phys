@@ -1,4 +1,6 @@
-type BusEvent = string;
+import { ClassroomEvent } from '@/model/Classroom';
+
+type BusEvent = ClassroomEvent;
 
 type BusEventHandler = () => void;
 

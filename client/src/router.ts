@@ -58,11 +58,13 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   if (
     (to.name && ['login'].includes(to.name)) ||
-    state.userManager.currentUser
+    state.userManager.authorized
   ) {
     next();
     return;
   }
+
+  next(false);
 
   router.replace({
     name: 'login',
