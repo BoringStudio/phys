@@ -27,7 +27,7 @@ export class LoggingMiddleware implements KoaMiddlewareInterface {
       url: ctx.url,
       query: ctx.query,
       remoteAddress: ctx.request.ip,
-      host: ctx.headers['host'],
+      host: ctx.headers.host,
       userAgent: ctx.headers['user-agent']
     };
 

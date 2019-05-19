@@ -7,15 +7,18 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { GroupsService } from '@/db/services/groups.service';
 import { GroupCreationInfo, GroupEditionInfo } from '@/db/models/Group';
 import { AlreadyExistsError } from '../errors';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class GroupsController {
   private groups: GroupsService = injector.get(GroupsService);
 

@@ -7,15 +7,18 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { ModulesService } from '@/db/services/modules.service';
 import { ModuleCreationInfo, ModuleEditionInfo } from '@/db/models/Module';
 import { AlreadyExistsError } from '../errors';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class ModulesController {
   private modules: ModulesService = injector.get(ModulesService);
 

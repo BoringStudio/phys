@@ -7,7 +7,8 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -17,8 +18,10 @@ import {
   SemesterEditionInfo
 } from '@/db/models/Semester';
 import { AlreadyExistsError } from '../errors';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class SemestersController {
   private semesters: SemestersService = injector.get(SemestersService);
 

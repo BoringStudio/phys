@@ -7,7 +7,8 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -17,8 +18,10 @@ import {
   ClassroomCreationInfo,
   ClassroomEditionInfo
 } from '@/db/models/Classroom';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class ClassroomsController {
   private classrooms: ClassroomsService = injector.get(ClassroomsService);
 

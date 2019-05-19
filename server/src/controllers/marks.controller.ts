@@ -7,15 +7,18 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { MarksService } from '@/db/services/marks.service';
 import { MarkCreationInfo, MarkEditionInfo } from '@/db/models/Mark';
 import { AlreadyExistsError } from '../errors';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class MarksController {
   private marks: MarksService = injector.get(MarksService);
 

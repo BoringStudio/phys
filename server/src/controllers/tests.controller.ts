@@ -7,15 +7,18 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { TestsService } from '@/db/services/tests.service';
 import { TestCreationInfo, TestEditionInfo } from '@/db/models/Test';
 import { AlreadyExistsError } from '../errors';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class TestsController {
   private tests: TestsService = injector.get(TestsService);
 

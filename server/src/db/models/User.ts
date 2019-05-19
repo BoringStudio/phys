@@ -14,7 +14,7 @@ export class UserCreationInfo {
   @Length(2, 50)
   public login: string;
 
-  @Length(6, 50)
+  @Length(4, 50)
   public password: string;
 
   @Length(2, 50)
@@ -37,7 +37,7 @@ export class UserEditionInfo {
   public login?: string;
 
   @IsOptional()
-  @Length(6, 50)
+  @Length(4, 50)
   public password?: string;
 
   @IsOptional()

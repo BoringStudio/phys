@@ -6,14 +6,17 @@ import {
   Param,
   OnUndefined,
   NotFoundError,
-  BadRequestError
+  BadRequestError,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { UsersService } from '@/db/services/users.service';
 import { User, UserCreationInfo } from '@/db/models/User';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class UsersController {
   private users: UsersService = injector.get(UsersService);
 

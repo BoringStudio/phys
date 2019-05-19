@@ -56,6 +56,7 @@ useContainer(Container);
 const app: Koa = createKoaServer({
   routePrefix: '/api',
   defaultErrorHandler: false,
+  cors: true,
   controllers: [
     AuthController,
     UsersController,

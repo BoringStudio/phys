@@ -5,6 +5,7 @@ import {
   OnUndefined,
   UnauthorizedError
 } from 'routing-controllers';
+import jwt from 'jsonwebtoken';
 
 import { Length } from 'class-validator';
 import { injector } from '@/server';
@@ -15,7 +16,7 @@ class AuthRequest {
   @Length(4, 50)
   public login: string;
 
-  @Length(6, 50)
+  @Length(4, 50)
   public password: string;
 }
 
@@ -32,7 +33,14 @@ export class AuthController {
       return;
     }
 
-    const { password, ...res } = user;
-    return res;
+    const { password, ...payload } = user;
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: 12 * 60 * 60 // 12h
+    });
+
+    return {
+      token
+    };
   }
 }

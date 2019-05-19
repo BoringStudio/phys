@@ -8,7 +8,8 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  Params
+  Params,
+  UseBefore
 } from 'routing-controllers';
 import { IsInt } from 'class-validator';
 
@@ -20,6 +21,7 @@ import {
   DisciplineEditionInfo,
   DisciplineTestInfo
 } from '@/db/models/Discipline';
+import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 class DisciplineTestParameters {
   @IsInt()
@@ -30,6 +32,7 @@ class DisciplineTestParameters {
 }
 
 @JsonController()
+@UseBefore(AuthMiddleware)
 export class DisciplinesController {
   private disciplines: DisciplinesService = injector.get(DisciplinesService);
 
