@@ -1,0 +1,22 @@
+<div class="page classrooms-page">
+  <h3>
+    Аудитории
+    <b-button class="ml-3" variant="success" @click="addClassroom">Добавить</b-button>
+  </h3>
+  <hr>
+  <b-row class="justify-content-md-center">
+    <b-col cols="12" md="8" lg="6">
+      <cards-list :items="classrooms" @remove="removeClassroom">
+        <template v-slot:default="props">{{ props.item.name }}</template>
+      </cards-list>
+    </b-col>
+  </b-row>
+
+  <general-modal ref="classroom-modal" title="Аудитории">
+    <template v-slot="{ data }">
+      <b-form-group label="Название">
+        <b-form-input type="text" autocomplete="false" v-model="data.name"/>
+      </b-form-group>
+    </template>
+  </general-modal>
+</div>

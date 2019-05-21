@@ -10,7 +10,7 @@
           <div class="noselect">
             <h4>{{ formatTime(now) }}</h4>
           </div>
-          <div>Иванов Иван Иванович</div>
+          <div>{{ fullName }}</div>
         </div>
         <div
           class="button noselect"
@@ -84,6 +84,14 @@ export default class App extends Vue {
     this.$router.push({
       name: 'login'
     });
+  }
+
+  private get fullName() {
+    if (!this.$state.userManager.authorized) {
+      return '';
+    }
+
+    return this.$state.userManager.currentUser!.fullName;
   }
 }
 </script>
@@ -169,6 +177,7 @@ body {
   .page {
     width: 100%;
     overflow-y: scroll;
+    padding: 20px 40px
   }
 }
 </style>

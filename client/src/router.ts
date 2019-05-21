@@ -2,16 +2,16 @@ import Vue from 'vue';
 import axios from 'axios';
 import Router from 'vue-router';
 
-import LogPage from '@/views/Log.vue';
-import TimetablePage from './views/Timetable.vue';
-import StudentsListPage from './views/StudentsList.vue';
+import LogPage from '@/views/LogPage';
+import TimetablePage from '@/views/TimetablePage/index.vue';
+import StudentsPage from '@/views/StudentsPage/index.vue';
 
-import TestsPage from './views/Tests.vue';
-import ClassroomsPage from './views/Classrooms.vue';
+import TestsPage from '@/views/TestsPage/index.vue';
+import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
 
 import state from '@/model/State';
 
-const loginPage = () => import('@/views/Login.vue');
+const loginPage = () => import('@/views/LoginPage/index.vue');
 
 Vue.use(Router);
 
@@ -27,7 +27,7 @@ const router = new Router({
     {
       path: '/students',
       name: 'students',
-      component: StudentsListPage
+      component: StudentsPage
     },
     {
       path: '/log',

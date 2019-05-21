@@ -15,7 +15,7 @@ export const healthGroupName = (group: HealthGroup) => {
     case HealthGroup.Third:
       return 'Спец. группа';
   }
-}
+};
 
 export class Student {
   public surname: string;
@@ -35,7 +35,7 @@ export class Student {
     name?: string,
     middleName?: string,
     group?: string,
-    healthGroup?: HealthGroup,
+    healthGroup?: HealthGroup
   ) {
     this.surname = surname || '';
     this.name = name || '';

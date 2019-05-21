@@ -1,0 +1,57 @@
+@import '@/styles/general.scss';
+
+$border-color: rgba(0, 0, 0, 0.14);
+
+.timetable-page {
+  padding: 20px 40px;
+
+  & > .title {
+    height: $title-height;
+    font-weight: bold;
+
+    @extend .item-centered;
+    align-items: flex-start;
+
+    background-color: $title-color;
+  }
+
+  .day {
+    border: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+
+    .title {
+      @extend .item-centered;
+
+      height: $title-height;
+      background-color: rgba(0, 0, 0, 0.075);
+    }
+
+    .lesson {
+      min-height: $title-height;
+
+      .place {
+        height: $row-height;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.14);
+          cursor: pointer;
+        }
+      }
+
+      &:not(:last-child),
+      .place:not(:last-child) {
+        border-bottom: 1px solid $border-color;
+      }
+
+      & > .col:first-child {
+        border-right: 1px solid $border-color;
+      }
+
+      .button-add {
+        color: $border-color;
+      }
+    }
+  }
+}

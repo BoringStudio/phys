@@ -8,10 +8,14 @@ export interface IClassroomData {
 }
 
 export class Classroom implements IClassroomData {
-  public id: number;
-  public name: string;
+  public id: number = -1;
+  public name: string = '';
 
-  constructor(data: IClassroomData) {
+  constructor(data?: IClassroomData) {
+    if (data == null) {
+      return;
+    }
+
     this.id = data.id;
     this.name = data.name;
   }

@@ -18,6 +18,11 @@ export interface IUserData {
   fullAccess: boolean;
 }
 
+interface IPayload extends IUserData {
+  iat: number;
+  exp: number;
+}
+
 export class User implements IUserData {
   public id: number;
   public login: string;
@@ -34,12 +39,20 @@ export class User implements IUserData {
     this.middlename = data.middlename;
     this.fullAccess = data.fullAccess;
   }
+
+  public get fullName() {
+    return `${this.surname} ${this.name}` + (this.middlename
+      ? ` ${this.middlename}`
+      : '');
+  }
 }
 
 export class UserManager {
   public currentUser: User | null = null;
 
   public users: User[] = [];
+
+  private accountExpiration: number = 0;
 
   constructor() {
     this.restoreData();
@@ -58,15 +71,19 @@ export class UserManager {
   }
 
   public get authorized() {
-    return this.currentUser != null;
+    return this.currentUser != null && Date.now() < this.accountExpiration;
   }
 
   private storeData(token: string | null) {
     if (token != null) {
+      const { iat, exp, ...userInfo } = jwt.decode(token) as IPayload;
+
+      this.accountExpiration = exp * 1000;
+
+      this.currentUser = new User(userInfo);
+
       axios.defaults.headers.common.Authorization = `Bearer ${token}`;
       localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN, token);
-
-      this.currentUser = new User(jwt.decode(token) as IUserData);
     } else {
       delete axios.defaults.headers.common.Authorization;
       localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN);

@@ -1,4 +1,3 @@
-<!-- TEMPLATE BEGIN -->
 <template>
   <div class="c-cards-list">
     <div v-for="(item, index) in items" :key="`cardlist-item-${index}`" class="list-item">
@@ -11,10 +10,8 @@
     </div>
   </div>
 </template>
-<!-- TEMPLATE END -->
 
 
-<!-- SCRIPT BEGIN -->
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -24,13 +21,11 @@ export default class CardsList extends Vue {
     type: Array,
     default: []
   })
-  private readonly items!: Array<any>;
+  private readonly items!: any[];
 }
 </script>
-<!-- SCRIPT END -->
 
 
-<!-- STYLE BEGIN -->
 <style lang="scss">
 @import '@/styles/general.scss';
 
@@ -69,4 +64,3 @@ export default class CardsList extends Vue {
   }
 }
 </style>
-<!-- STYLE END -->

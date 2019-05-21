@@ -1,0 +1,20 @@
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .window {
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    padding: 20px;
+    width: 300px;
+
+    h3 {
+      text-align: center;
+    }
+
+    .form-group:last-child {
+      margin-top: 3em;
+    }
+  }
+}

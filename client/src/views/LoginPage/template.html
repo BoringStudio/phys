@@ -1,0 +1,14 @@
+<div class="login-page page">
+  <b-form class="window">
+    <h3>Авторизация</h3>
+    <b-form-group label="Логин">
+      <b-input class="w-100" v-model.trim="authData.login"/>
+    </b-form-group>
+    <b-form-group label="Пароль">
+      <b-input class="w-100" type="password" v-model="authData.password"/>
+    </b-form-group>
+    <b-form-group>
+      <b-button class="w-100" @click="onLogin">Вход</b-button>
+    </b-form-group>
+  </b-form>
+</div>

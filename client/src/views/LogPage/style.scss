@@ -1,0 +1,177 @@
+@import '@/styles/general.scss';
+
+$mark-color: white;
+$module-color: #b1bed5;
+$summ-color: #bfd8d5;
+
+$students-width: 425px;
+
+.log-page {
+  .wrapper {
+    min-width: 1000px;
+    overflow-x: auto;
+
+    display: flex;
+    flex-direction: row;
+  }
+
+  & > .title {
+    height: $title-height;
+    font-weight: bold;
+
+    @extend .item-centered;
+    align-items: flex-start;
+
+    background-color: $title-color;
+
+    .col:first-child {
+      flex: none;
+      width: $students-width;
+    }
+  }
+
+  .tabs {
+    height: $title-height;
+
+    display: flex;
+    flex-direction: row;
+
+    background-color: $title-color;
+
+    .tab {
+      padding: 10px;
+      @extend .item-centered;
+      font-weight: bold;
+
+      &:hover {
+        background-color: darken($title-color, 7.5);
+        cursor: pointer;
+      }
+
+      &.active {
+        background-color: darken($title-color, 14);
+      }
+    }
+  }
+
+  .students-list {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: $students-width;
+
+    .search {
+      height: $row-height;
+      border-radius: 0;
+      border: none;
+
+      &:focus {
+        box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
+      }
+    }
+
+    .items-container {
+      .item {
+        width: 100%;
+        height: $row-height;
+        padding: 5px;
+
+        @extend .item-centered;
+        align-items: flex-start;
+
+        &:nth-child(odd) {
+          background-color: darken($mark-color, 7.5);
+        }
+
+        &:hover {
+          cursor: pointer;
+          background-color: darken($mark-color, 14);
+        }
+      }
+    }
+  }
+
+  .tables {
+    width: 100%;
+
+    .rows-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .items-row,
+    .title {
+      height: $row-height;
+      display: flex;
+      flex-direction: row;
+
+      .item {
+        width: 3.5em;
+        height: 100%;
+        @extend .item-centered;
+
+        font-weight: bold;
+
+        .custom-select,
+        .form-control {
+          height: $row-height;
+
+          padding-right: 0px;
+          border-radius: 0px;
+
+          border: none;
+          background-position: right 5px bottom 50%;
+          transition: none;
+
+          &:hover,
+          &:focus {
+            transition: none;
+            box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
+          }
+        }
+      }
+
+      .item:nth-child(odd),
+      .item:nth-child(odd) .custom-select,
+      .item:nth-child(odd) .form-control {
+        background-color: rgba(0, 0, 0, 0.025);
+      }
+
+      .item:nth-child(even),
+      .item:nth-child(even) .custom-select,
+      .item:nth-child(even) .form-control {
+        background-color: transparent;
+      }
+
+      &:nth-child(odd) {
+        &:not(.title) {
+          background-color: darken($mark-color, 7);
+        }
+
+        .item.module {
+          background-color: darken($module-color, 7);
+        }
+      }
+
+      &:nth-child(even) {
+        .item.module {
+          background-color: $module-color;
+        }
+      }
+
+      .item.module:last-child {
+        margin-left: auto;
+      }
+    }
+  }
+
+  .tests-table {
+    .title .item {
+      width: 14em;
+    }
+
+    .items-row .item {
+      width: 7em;
+    }
+  }
+}
