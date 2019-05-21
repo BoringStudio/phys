@@ -1,6 +1,7 @@
 import { ClassroomEvent } from '@/model/Classroom';
+import { TestEvent } from '@/model/Test';
 
-type BusEvent = ClassroomEvent;
+type BusEvent = ClassroomEvent | TestEvent;
 
 type BusEventHandler = () => void;
 

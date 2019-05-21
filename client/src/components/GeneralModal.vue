@@ -1,6 +1,6 @@
 <template>
   <div class="c-general-modal">
-    <b-modal v-model="isModalVisible" no-fade>
+    <b-modal v-model="isModalVisible" :size="size" no-fade>
       <template slot="modal-title">{{ title }}</template>
 
       <slot v-bind:data="data" v-if="data != null"></slot>
@@ -34,6 +34,12 @@ export default class GeneralModal extends Vue {
     default: ''
   })
   private title!: string;
+
+  @Prop({
+    type: String,
+    required: false
+  })
+  private size!: string;
 
   public setVisible(visible: boolean) {
     this.isModalVisible = visible;

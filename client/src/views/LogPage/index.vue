@@ -83,28 +83,6 @@ export default class LogPage extends Vue {
       week += 6;
     }
 
-    const shuttleRunning = new Test('Челночный бег');
-    shuttleRunning.grades = [22.0, 21.5, 20.5, 19.5, 18.5];
-    shuttleRunning.direction = 'min';
-
-    const maraphon = new Test('Бег на выносливость');
-    maraphon.grades = [10, 11, 12, 13, 14];
-    maraphon.direction = 'max';
-
-    const lifts = new Test('Подтягивания');
-    lifts.grades = [5, 7, 9, 12, 15];
-    lifts.direction = 'max';
-
-    const jumping = new Test('Прыжок в длину с места');
-    jumping.grades = [2.1, 2.2, 2.3, 2.4, 2.5];
-    jumping.direction = 'max';
-
-    const lowerLifts = new Test('Отжимания');
-    lowerLifts.grades = [10, 15, 20, 30, 45];
-    lowerLifts.direction = 'max';
-
-    this.tests = [shuttleRunning, maraphon, lifts, jumping, lowerLifts];
-
     for (let i = 0; i < 10; ++i) {
       const sampleStudent = new Student(
         'Иванов',

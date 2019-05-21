@@ -1,7 +1,12 @@
 <template>
   <div class="c-cards-list">
-    <div v-for="(item, index) in items" :key="`cardlist-item-${index}`" class="list-item">
-      <div class="title">
+    <div
+      v-for="(item, index) in items"
+      :key="`cardlist-item-${index}`"
+      class="list-item d-flex"
+      v-bind:class="{editable}"
+    >
+      <div class="title flex-grow-1" @click="editable ? $emit('edit', item) : ''">
         <slot v-bind:item="item"></slot>
       </div>
       <div class="button-delete" @click="$emit('remove', item)">
@@ -22,6 +27,12 @@ export default class CardsList extends Vue {
     default: []
   })
   private readonly items!: any[];
+
+  @Prop({
+    type: Boolean,
+    default: false
+  })
+  private readonly editable!: boolean;
 }
 </script>
 
@@ -35,9 +46,6 @@ export default class CardsList extends Vue {
     border: 1px solid rgba(0, 0, 0, 0.14);
     box-shadow: inset 4px 0px rgba(0, 0, 0, 0.14);
 
-    display: flex;
-    flex-direction: row;
-
     .title {
       line-height: $row-height;
       margin-right: auto;
@@ -45,7 +53,6 @@ export default class CardsList extends Vue {
     }
 
     .button-delete {
-      flex: none;
       text-align: center;
       line-height: $row-height;
 
@@ -60,6 +67,16 @@ export default class CardsList extends Vue {
 
     &:not(:last-child) {
       margin-bottom: 1em;
+    }
+
+    &.editable {
+      .title {
+        cursor: pointer;
+      }
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.075);
+      }
     }
   }
 }

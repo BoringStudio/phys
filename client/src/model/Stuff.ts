@@ -20,3 +20,5 @@ export const deleteByIndex = (array: Array<{ id: number }>, id: number) => {
     Vue.delete(array, index);
   }
 };
+
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;

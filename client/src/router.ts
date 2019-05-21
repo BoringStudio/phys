@@ -2,7 +2,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import Router from 'vue-router';
 
-import LogPage from '@/views/LogPage';
+import LogPage from '@/views/LogPage/index.vue';
 import TimetablePage from '@/views/TimetablePage/index.vue';
 import StudentsPage from '@/views/StudentsPage/index.vue';
 
