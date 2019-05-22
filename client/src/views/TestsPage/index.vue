@@ -5,16 +5,16 @@ import { Component, Vue } from 'vue-property-decorator';
 import { Test } from '@/model/Test';
 
 import CardsList from '@/components/CardsList.vue';
-import GeneralModal from '@/components/GeneralModal.vue';
+import TestModal from '@/components/TestModal.vue';
 
 @Component({
   components: {
     CardsList,
-    GeneralModal
+    TestModal
   }
 })
 export default class TestsPage extends Vue {
-  private testModal!: GeneralModal;
+  private testModal!: TestModal;
 
   private tests: Test[] = [];
 
@@ -25,7 +25,7 @@ export default class TestsPage extends Vue {
   }
 
   private async mounted() {
-    this.testModal = this.$refs['test-modal'] as GeneralModal;
+    this.testModal = this.$refs['test-modal'] as TestModal;
     this.testModal.$on('submit', async (test: Test) => {
       this.testModal.setInProcess(true);
 

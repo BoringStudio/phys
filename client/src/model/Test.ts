@@ -87,7 +87,6 @@ export class TestManager {
     });
 
     this.tests.push(test);
-
     bus.fire('tests_changed');
   }
 

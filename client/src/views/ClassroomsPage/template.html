@@ -14,15 +14,5 @@
     </b-col>
   </b-row>
 
-  <general-modal ref="classroom-modal" title="Аудитория">
-    <template v-slot="{ data }">
-      <b-form-group label="Название">
-        <b-form-input
-          type="text"
-          autocomplete="false"
-          v-model="data.name"
-        ></b-form-input>
-      </b-form-group>
-    </template>
-  </general-modal>
+  <classroom-modal ref="classroom-modal" />
 </div>

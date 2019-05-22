@@ -41,9 +41,10 @@ export class User implements IUserData {
   }
 
   public get fullName() {
-    return `${this.surname} ${this.name}` + (this.middlename
-      ? ` ${this.middlename}`
-      : '');
+    return (
+      `${this.surname} ${this.name}` +
+      (this.middlename ? ` ${this.middlename}` : '')
+    );
   }
 }
 

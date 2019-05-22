@@ -5,16 +5,16 @@ import { Component, Vue } from 'vue-property-decorator';
 import { Classroom } from '@/model/Classroom';
 
 import CardsList from '@/components/CardsList.vue';
-import GeneralModal from '@/components/GeneralModal.vue';
+import ClassroomModal from '@/components/ClassroomModal.vue';
 
 @Component({
   components: {
     CardsList,
-    GeneralModal
+    ClassroomModal
   }
 })
 export default class ClassroomsPage extends Vue {
-  private classroomModal!: GeneralModal;
+  private classroomModal!: ClassroomModal;
 
   private classrooms: Classroom[] = [];
 
@@ -25,7 +25,7 @@ export default class ClassroomsPage extends Vue {
   }
 
   private async mounted() {
-    this.classroomModal = this.$refs['classroom-modal'] as GeneralModal;
+    this.classroomModal = this.$refs['classroom-modal'] as ClassroomModal;
     this.classroomModal.$on('submit', async (classroom: Classroom) => {
       this.classroomModal.setInProcess(true);
 
