@@ -4,8 +4,8 @@
     <b-button class="ml-3" variant="success" @click="addTest">
       <span>Добавить</span>
     </b-button>
+    <hr />
   </h3>
-  <hr />
   <b-row class="justify-content-md-center">
     <b-col cols="12" md="8" lg="6">
       <cards-list :items="tests" editable @edit="editTest" @remove="removeTest">

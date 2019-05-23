@@ -1,0 +1,20 @@
+<page title="Группы">
+  <template v-slot:actions>
+    <b-button class="ml-3" variant="success" @click="addGroup">
+      <span>Добавить</span>
+    </b-button>
+  </template>
+
+  <cards-list
+    ref="groups-list"
+    class="h-100"
+    :items="groups"
+    :properties="groupsPagination"
+    @edit="editGroup"
+    @remove="removeGroup"
+  >
+    <template v-slot="{ item }">{{ item.name }}</template>
+  </cards-list>
+
+  <group-modal ref="group-modal"></group-modal>
+</page>

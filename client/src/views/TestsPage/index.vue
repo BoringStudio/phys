@@ -41,7 +41,7 @@ export default class TestsPage extends Vue {
         this.testModal.setVisible(false);
       } catch (e) {
         this.$notify({
-          title: `Невозможно ${create ? 'создать' : 'изменить'} аудиторию`,
+          title: `Невозможно ${create ? 'создать' : 'изменить'} норматив`,
           type: 'error'
         });
         this.testModal.setInProcess(false);

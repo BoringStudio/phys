@@ -1,23 +1,18 @@
-<div class="page students-list-page">
-  <h3>
-    <span>Список студентов</span>
+<page title="Список студентов">
+  <template v-slot:actions>
     <b-button class="ml-3" variant="success" @click="addStudent">
       <span>Добавить</span>
     </b-button>
-  </h3>
-  <hr />
-  <b-row class="justify-content-md-center">
-    <b-col cols="12" md="8" lg="6">
-      <cards-list
-        :items="students"
-        editable
-        @edit="editStudent"
-        @remove="removeStudent"
-      >
-        <template v-slot="{ item }">{{ item.fullName }}</template>
-      </cards-list>
-    </b-col>
-  </b-row>
+  </template>
 
-  <student-modal ref="student-modal" />
-</div>
+  <cards-list
+    :items="students"
+    editable
+    @edit="editStudent"
+    @remove="removeStudent"
+  >
+    <template v-slot="{ item }">{{ item.fullName }}</template>
+  </cards-list>
+
+  <student-modal ref="student-modal"></student-modal>
+</page>

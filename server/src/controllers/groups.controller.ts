@@ -8,14 +8,17 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  UseBefore
+  UseBefore,
+  QueryParams
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { GroupsService } from '@/db/services/groups.service';
-import { GroupCreationInfo, GroupEditionInfo } from '@/db/models/Group';
+import { GroupCreationInfo, GroupEditionInfo, Group } from '@/db/models/Group';
 import { AlreadyExistsError } from '../errors';
 import { AuthMiddleware } from '@/middlewares/auth.middleware';
+
+import { PaginationQueryParams } from '@/pagination';
 
 @JsonController()
 @UseBefore(AuthMiddleware)
@@ -23,8 +26,17 @@ export class GroupsController {
   private groups: GroupsService = injector.get(GroupsService);
 
   @Get('/groups')
-  public async getAll() {
-    return await this.groups.getAll();
+  public async getAll(@QueryParams() { page, perPage }: PaginationQueryParams) {
+    if (page == null || perPage == null) {
+      return await this.groups.getAll();
+    }
+
+    return await this.groups.getPage(perPage, page);
+  }
+
+  @Get('/groups/total')
+  public async getTotalCount() {
+    return (await this.groups.getTotalCount()).count;
   }
 
   @Get('/group/:id')
@@ -57,7 +69,7 @@ export class GroupsController {
 
   @Delete('/group/:id')
   public async remove(@Param('id') id: any) {
-    await this.groups.remove(id);
+    const res = await this.groups.remove(id);
     return {};
   }
 }

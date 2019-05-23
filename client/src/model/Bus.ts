@@ -1,10 +1,11 @@
 import { ClassroomEvent } from '@/model/Classroom';
 import { TestEvent } from '@/model/Test';
 import { StudentEvent } from '@/model/Student';
+import { GroupEvent } from '@/model/Group';
 
-type BusEvent = ClassroomEvent | TestEvent | StudentEvent;
+type BusEvent = ClassroomEvent | TestEvent | StudentEvent | GroupEvent;
 
-type BusEventHandler = () => void;
+type BusEventHandler = (data?: any) => void;
 
 interface ListenerPair {
   event: BusEvent;
@@ -15,33 +16,52 @@ export class Bus {
   private _listeners: Map<BusEvent, BusEventHandler[]> = new Map();
   private _ownedHandlers: Map<object, ListenerPair[]> = new Map();
 
-  public on(event: BusEvent, handler: BusEventHandler, owner?: object): void {
-    const listeners = this._listeners.get(event);
-    this._listeners.set(event, (listeners || []).concat(handler));
+  public on(
+    events: BusEvent | BusEvent[],
+    handler: BusEventHandler,
+    owner?: object
+  ): void {
+    events = events instanceof Array ? events : [events];
 
-    if (!owner) {
-      return;
-    }
+    events.forEach((event) => {
+      const listeners = this._listeners.get(event);
+      this._listeners.set(event, (listeners || []).concat(handler));
 
-    const handlers = this._ownedHandlers.get(owner);
-    this._ownedHandlers.set(owner, (handlers || []).concat({ event, handler }));
+      if (!owner) {
+        return;
+      }
+
+      const handlers = this._ownedHandlers.get(owner);
+      this._ownedHandlers.set(
+        owner,
+        (handlers || []).concat({ event, handler })
+      );
+    });
   }
 
-  public off(event: BusEvent, handler: BusEventHandler): void {
-    const listeners = this._listeners.get(event);
+  public off(events: BusEvent | BusEvent[], handler: BusEventHandler): void {
+    events = events instanceof Array ? events : [events];
 
-    if (listeners == null) {
-      return;
-    }
+    events.forEach((event) => {
+      const listeners = this._listeners.get(event);
 
-    this._listeners.set(event, listeners.filter((v) => v !== handler));
+      if (listeners == null) {
+        return;
+      }
+
+      this._listeners.set(event, listeners.filter((v) => v !== handler));
+    });
   }
 
-  public fire(event: BusEvent): void {
-    const listeners = this._listeners.get(event);
-    if (listeners) {
-      listeners.forEach((v) => v());
-    }
+  public fire(events: BusEvent | BusEvent[], data?: any): void {
+    events = events instanceof Array ? events : [events];
+
+    events.forEach((event) => {
+      const listeners = this._listeners.get(event);
+      if (listeners) {
+        listeners.forEach((v) => v(data));
+      }
+    });
   }
 
   public clear(owner: object): void {

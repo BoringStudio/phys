@@ -5,6 +5,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import moment from 'moment-timezone';
 
+import Page from '@/components/Page.vue';
 import StudentModal from '@/components/StudentModal.vue';
 
 import { Module, MarkType } from '@/model/Module';
@@ -16,6 +17,7 @@ type StudentState = 'add' | 'edit';
 
 @Component({
   components: {
+    Page,
     StudentModal
   }
 })

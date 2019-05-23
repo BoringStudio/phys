@@ -1,6 +1,6 @@
 import axios from 'axios';
 import bus from '@/model/Bus';
-import { insertOrUpdate, deleteByIndex } from './Stuff';
+import { Omit, insertOrUpdate, deleteByIndex } from './Stuff';
 
 export interface IClassroomData {
   id: number;
@@ -43,16 +43,15 @@ export class ClassroomManager {
     bus.fire('classrooms_changed');
   }
 
-  public async create(name: string) {
-    const res = await axios.post<number>('classroom', { name });
+  public async create(data: Omit<IClassroomData, 'id'>) {
+    const res = await axios.post<number>('classroom', data);
 
     const classroom = new Classroom({
-      id: res.data,
-      name
+      ...data,
+      id: res.data
     });
 
     this.classrooms.push(classroom);
-
     bus.fire('classrooms_changed');
   }
 

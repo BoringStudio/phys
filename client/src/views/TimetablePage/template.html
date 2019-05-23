@@ -1,7 +1,4 @@
-<div class="page timetable-page">
-  <h3>Расписание</h3>
-  <hr>
-
+<page title="Расписание" wide class="timetable-page">
   <b-row>
     <b-col sm="12" lg="6" xl="4" v-for="(day, dayIndex) in days" :key="`day-${dayIndex}`">
       <div class="day">
@@ -47,4 +44,4 @@
       </b-form-group>
     </template>
   </general-modal>
-</div>
+</page>

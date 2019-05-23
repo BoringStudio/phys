@@ -68,8 +68,8 @@ export class StudentManager {
     const res = await axios.post<number>('student', data);
 
     const student = new Student({
-      id: res.data,
-      ...data
+      ...data,
+      id: res.data
     });
 
     this.students.push(student);

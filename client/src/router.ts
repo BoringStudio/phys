@@ -5,7 +5,7 @@ import Router from 'vue-router';
 import LogPage from '@/views/LogPage/index.vue';
 import TimetablePage from '@/views/TimetablePage/index.vue';
 import StudentsPage from '@/views/StudentsPage/index.vue';
-
+import GroupsPage from '@/views/GroupsPage/index.vue';
 import TestsPage from '@/views/TestsPage/index.vue';
 import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
 
@@ -28,6 +28,11 @@ const router = new Router({
       path: '/students',
       name: 'students',
       component: StudentsPage
+    },
+    {
+      path: '/groups',
+      name: 'groups',
+      component: GroupsPage
     },
     {
       path: '/log',

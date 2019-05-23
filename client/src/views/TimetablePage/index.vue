@@ -4,6 +4,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 
+import Page from '@/components/Page.vue';
 import GeneralModal from '@/components/GeneralModal.vue';
 
 import { Day, Lesson, LessonInstance } from '@/model/Lesson';
@@ -11,6 +12,7 @@ import state from '@/model/State';
 
 @Component({
   components: {
+    Page,
     GeneralModal
   }
 })

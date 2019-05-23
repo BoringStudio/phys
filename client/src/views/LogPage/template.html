@@ -1,10 +1,4 @@
-<div class="page log-page">
-  <h3>
-    <b-button variant="secondary" class="mr-2" @click="$router.push('/')">Назад</b-button>
-    {{ getLessonInstanceTitle() }}
-  </h3>
-  <hr>
-
+<page :title="getLessonInstanceTitle()" wide class="log-page">
   <div class="title noselect">
     <b-row class="m-0">
       <b-col class="p-1">
@@ -109,4 +103,4 @@
   </div>
 
   <student-modal ref="student-modal"/>
-</div>
+</page>

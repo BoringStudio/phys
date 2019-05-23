@@ -12,7 +12,24 @@ export class GroupsService {
   }
 
   public getAll() {
-    return this.db(groupsTable).select('*');
+    return this.db(groupsTable)
+      .select('*')
+      .orderBy('id');
+  }
+
+  public getPage(perPage: number, page: number) {
+    return this.db(groupsTable)
+      .select('*')
+      .orderBy('id')
+      .offset((page - 1) * perPage)
+      .limit(perPage);
+  }
+
+  public getTotalCount() {
+    return this.db(groupsTable)
+      .count('* as count')
+      .from(groupsTable)
+      .first();
   }
 
   public getSingle(id: number) {

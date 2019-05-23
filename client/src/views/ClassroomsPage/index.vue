@@ -4,11 +4,13 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Classroom } from '@/model/Classroom';
 
+import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
 import ClassroomModal from '@/components/ClassroomModal.vue';
 
 @Component({
   components: {
+    Page,
     CardsList,
     ClassroomModal
   }
@@ -29,12 +31,19 @@ export default class ClassroomsPage extends Vue {
     this.classroomModal.$on('submit', async (classroom: Classroom) => {
       this.classroomModal.setInProcess(true);
 
+      const create: boolean = classroom.id < 0;
+
       try {
-        await this.$state.classroomManager.create(classroom.name);
+        if (create) {
+          await this.$state.classroomManager.create(classroom);
+        } else {
+          await this.$state.classroomManager.update(classroom);
+        }
+
         this.classroomModal.setVisible(false);
       } catch (e) {
         this.$notify({
-          title: 'Невозможно создать аудиторию',
+          title: `Невозможно ${create ? 'создать' : 'изменить'} аудиторию`,
           type: 'error'
         });
         this.classroomModal.setInProcess(false);
@@ -46,6 +55,10 @@ export default class ClassroomsPage extends Vue {
 
   private addClassroom() {
     this.classroomModal.show(new Classroom());
+  }
+
+  private editClassroom(classroom: Classroom) {
+    this.classroomModal.show(classroom);
   }
 
   private async removeClassroom(item: Classroom) {

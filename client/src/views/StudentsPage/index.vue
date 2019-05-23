@@ -2,13 +2,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Student } from '../../model/Student';
+import { Student } from '@/model/Student';
 
+import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
 import StudentModal from '@/components/StudentModal.vue';
 
 @Component({
   components: {
+    Page,
     CardsList,
     StudentModal
   }

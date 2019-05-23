@@ -82,8 +82,8 @@ export class TestManager {
     const res = await axios.post<number>('test', data);
 
     const test = new Test({
-      id: res.data,
-      ...data
+      ...data,
+      id: res.data
     });
 
     this.tests.push(test);
