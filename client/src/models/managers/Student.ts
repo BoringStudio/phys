@@ -1,6 +1,6 @@
 import axios from 'axios';
-import bus from '@/model/Bus';
-import { Omit, insertOrUpdate, deleteByIndex } from './Stuff';
+import bus from '@/models/Bus';
+import { Omit } from '../Stuff';
 
 export type Gender = 'male' | 'female';
 
@@ -42,26 +42,20 @@ export class Student implements IStudentData {
   }
 }
 
-export type StudentEvent = 'students_changed';
+export type StudentEvent =
+  | 'student_created'
+  | 'student_updated'
+  | 'student_removed';
 
 export class StudentManager {
-  public students: Student[] = [];
-
-  constructor() {
-    this.fetchAll();
-  }
-
   public async fetchAll() {
     const res = await axios.get<IStudentData[]>('students');
-    this.students = res.data.map((data) => new Student(data));
-    bus.fire('students_changed');
+    return res.data.map((data) => new Student(data));
   }
 
   public async fetchOne(id: number) {
     const res = await axios.get<IStudentData>(`student/${id}`);
-    const student = new Student(res.data);
-    insertOrUpdate(this.students, student);
-    bus.fire('students_changed');
+    return new Student(res.data);
   }
 
   public async create(data: Omit<IStudentData, 'id'>) {
@@ -71,21 +65,20 @@ export class StudentManager {
       ...data,
       id: res.data
     });
-
-    this.students.push(student);
-    bus.fire('students_changed');
+    bus.fire('student_created', student);
+    return student;
   }
 
   public async update(data: IStudentData) {
     await axios.put('student', data);
     const student = new Student(data);
-    insertOrUpdate(this.students, student);
-    bus.fire('students_changed');
+
+    bus.fire('student_updated', student);
+    return student;
   }
 
   public async remove(id: number) {
     await axios.delete(`student/${id}`);
-    deleteByIndex(this.students, id);
-    bus.fire('students_changed');
+    bus.fire('student_removed', id);
   }
 }

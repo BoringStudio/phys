@@ -12,7 +12,9 @@ export class StudentsService {
   }
 
   public getAll() {
-    return this.db(studentsTable).select('*');
+    return this.db(studentsTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {

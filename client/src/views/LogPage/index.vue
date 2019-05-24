@@ -8,9 +8,9 @@ import moment from 'moment-timezone';
 import Page from '@/components/Page.vue';
 import StudentModal from '@/components/StudentModal.vue';
 
-import { Module, MarkType } from '@/model/Module';
-import { Student, HealthGroup } from '@/model/Student';
-import { Test } from '@/model/Test';
+import { Module, MarkType } from '@/models/Module';
+import { Student } from '@/models/managers/Student';
+import { Test } from '@/models/managers/Test';
 
 type State = 'schedule' | 'tests' | 'info';
 type StudentState = 'add' | 'edit';

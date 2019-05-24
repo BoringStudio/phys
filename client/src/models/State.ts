@@ -1,18 +1,14 @@
-import { UserManager } from './User';
-
-import { LessonInstance } from './Lesson';
-import { ClassroomManager } from './Classroom';
-import { TestManager } from './Test';
-import { StudentManager } from './Student';
-import { GroupManager } from './Group';
-
 import axios from 'axios';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 
-export class State {
-  public currentInstance: LessonInstance = new LessonInstance();
+import { UserManager } from './managers/User';
+import { ClassroomManager } from './managers/Classroom';
+import { TestManager } from './managers/Test';
+import { StudentManager } from './managers/Student';
+import { GroupManager } from './managers/Group';
 
+export class State {
   public userManager: UserManager;
   public classroomManager: ClassroomManager;
   public testManager: TestManager;

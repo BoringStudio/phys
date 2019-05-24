@@ -2,7 +2,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Student } from '@/model/Student';
+import { Student } from '@/models/managers/Student';
+import { updateIfExists } from '@/models/Stuff';
 
 import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
@@ -21,8 +22,11 @@ export default class StudentsPage extends Vue {
   private students: Student[] = [];
 
   private created() {
-    this.$bus.on('students_changed', () => {
-      this.students = this.$state.studentManager.students;
+    this.$bus.on('student_updated', (student: Student) => {
+      updateIfExists(this.students, student);
+    });
+    this.$bus.on(['student_created', 'student_removed'], async () => {
+      this.students = await this.$state.studentManager.fetchAll();
     });
   }
 
@@ -50,7 +54,7 @@ export default class StudentsPage extends Vue {
       }
     });
 
-    this.$state.studentManager.fetchAll();
+    this.students = await this.$state.studentManager.fetchAll();
   }
 
   private addStudent() {

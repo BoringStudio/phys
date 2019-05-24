@@ -2,7 +2,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Test } from '@/model/Test';
+import { Test } from '@/models/managers/Test';
+import { updateIfExists } from '@/models/Stuff';
 
 import CardsList from '@/components/CardsList.vue';
 import TestModal from '@/components/TestModal.vue';
@@ -19,8 +20,11 @@ export default class TestsPage extends Vue {
   private tests: Test[] = [];
 
   private created() {
-    this.$bus.on('tests_changed', () => {
-      this.tests = this.$state.testManager.tests;
+    this.$bus.on('test_updated', (test: Test) => {
+      updateIfExists(this.tests, test);
+    });
+    this.$bus.on(['test_created', 'test_removed'], async () => {
+      this.tests = await this.$state.testManager.fetchAll();
     });
   }
 
@@ -48,7 +52,7 @@ export default class TestsPage extends Vue {
       }
     });
 
-    this.$state.testManager.fetchAll();
+    this.tests = await this.$state.testManager.fetchAll();
   }
 
   private addTest() {

@@ -17,7 +17,9 @@ export class DisciplinesService {
   }
 
   public getAll() {
-    return this.db(disciplinesTable).select('*');
+    return this.db(disciplinesTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {
@@ -59,7 +61,8 @@ export class DisciplinesService {
           this.db.raw('?', [id])
         );
       })
-      .select(`${testsTable}.*`);
+      .select(`${testsTable}.*`)
+      .orderBy('id');
   }
 
   public addTest(disciplineId: number, testId: number) {

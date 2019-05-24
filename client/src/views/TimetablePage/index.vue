@@ -7,8 +7,8 @@ import { Component, Vue } from 'vue-property-decorator';
 import Page from '@/components/Page.vue';
 import GeneralModal from '@/components/GeneralModal.vue';
 
-import { Day, Lesson, LessonInstance } from '@/model/Lesson';
-import state from '@/model/State';
+import { Day, Lesson, LessonInstance } from '@/models/Lesson';
+import state from '@/models/State';
 
 @Component({
   components: {
@@ -49,7 +49,7 @@ export default class TimeTablePage extends Vue {
   }
 
   private openLog(lessonInstance: LessonInstance) {
-    state.currentInstance = lessonInstance;
+    //state.currentInstance = lessonInstance;
 
     this.$router.push({
       name: 'log'

@@ -2,8 +2,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { sync, updateIfExists } from '@/model/Stuff';
-import { Group } from '@/model/Group';
+import { Group } from '@/models/managers/Group';
+import { updateIfExists } from '@/models/Stuff';
 
 import Page from '@/components/Page.vue';
 import CardsList, { PaginationProperties } from '@/components/CardsList.vue';

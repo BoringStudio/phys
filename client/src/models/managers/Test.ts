@@ -1,6 +1,6 @@
 import axios from 'axios';
-import bus from '@/model/Bus';
-import { Omit, insertOrUpdate, deleteByIndex } from './Stuff';
+import bus from '@/models/Bus';
+import { Omit } from '../Stuff';
 
 export interface ITestData {
   id: number;
@@ -56,26 +56,18 @@ export class Test implements ITestData {
   }
 }
 
-export type TestEvent = 'tests_changed';
+export type TestEvent = 'test_created' | 'test_updated' | 'test_removed';
 
 export class TestManager {
-  public tests: Test[] = [];
-
-  constructor() {
-    this.fetchAll();
-  }
-
   public async fetchAll() {
     const res = await axios.get<ITestData[]>('tests');
-    this.tests = res.data.map((data) => new Test(data));
-    bus.fire('tests_changed');
+
+    return res.data.map((data) => new Test(data));
   }
 
   public async fetchOne(id: number) {
     const res = await axios.get<ITestData>(`test/${id}`);
-    const test = new Test(res.data);
-    insertOrUpdate(this.tests, test);
-    bus.fire('tests_changed');
+    return new Test(res.data);
   }
 
   public async create(data: Omit<ITestData, 'id'>) {
@@ -85,21 +77,20 @@ export class TestManager {
       ...data,
       id: res.data
     });
-
-    this.tests.push(test);
-    bus.fire('tests_changed');
+    bus.fire('test_created', test);
+    return test;
   }
 
   public async update(data: ITestData) {
     await axios.put('test', data);
     const test = new Test(data);
-    insertOrUpdate(this.tests, test);
-    bus.fire('tests_changed');
+
+    bus.fire('test_updated', test);
+    return test;
   }
 
   public async remove(id: number) {
     await axios.delete(`test/${id}`);
-    deleteByIndex(this.tests, id);
-    bus.fire('tests_changed');
+    bus.fire('test_removed', id);
   }
 }

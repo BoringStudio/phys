@@ -2,8 +2,8 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
 
-import bus from '@/model/Bus';
-import state from '@/model/State';
+import bus from '@/models/Bus';
+import state from '@/models/State';
 
 import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.min.css';

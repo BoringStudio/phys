@@ -2,7 +2,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Classroom } from '@/model/Classroom';
+import { Classroom } from '@/models/managers/Classroom';
+import { updateIfExists } from '@/models/Stuff';
 
 import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
@@ -21,8 +22,11 @@ export default class ClassroomsPage extends Vue {
   private classrooms: Classroom[] = [];
 
   private created() {
-    this.$bus.on('classrooms_changed', () => {
-      this.classrooms = this.$state.classroomManager.classrooms;
+    this.$bus.on('classroom_updated', (classroom: Classroom) => {
+      updateIfExists(this.classrooms, classroom);
+    });
+    this.$bus.on(['classroom_created', 'classroom_removed'], async () => {
+      this.classrooms = await this.$state.classroomManager.fetchAll();
     });
   }
 
@@ -50,7 +54,7 @@ export default class ClassroomsPage extends Vue {
       }
     });
 
-    this.$state.classroomManager.fetchAll();
+    this.classrooms = await this.$state.classroomManager.fetchAll();
   }
 
   private addClassroom() {

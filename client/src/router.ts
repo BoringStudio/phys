@@ -9,7 +9,7 @@ import GroupsPage from '@/views/GroupsPage/index.vue';
 import TestsPage from '@/views/TestsPage/index.vue';
 import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
 
-import state from '@/model/State';
+import state from '@/models/State';
 
 const loginPage = () => import('@/views/LoginPage/index.vue');
 

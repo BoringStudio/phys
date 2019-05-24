@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Vue from 'vue';
 import jwt from 'jsonwebtoken';
 
 const LOCAL_STORAGE_ACCESS_TOKEN = 'access-token';
@@ -50,8 +49,6 @@ export class User implements IUserData {
 
 export class UserManager {
   public currentUser: User | null = null;
-
-  public users: User[] = [];
 
   private accountExpiration: number = 0;
 

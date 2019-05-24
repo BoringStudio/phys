@@ -1,6 +1,6 @@
 import axios from 'axios';
-import bus from '@/model/Bus';
-import { Omit, insertOrUpdate, deleteByIndex } from './Stuff';
+import bus from '@/models/Bus';
+import { Omit } from '../Stuff';
 
 export interface IGroupData {
   id: number;

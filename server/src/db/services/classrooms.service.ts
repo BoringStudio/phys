@@ -15,7 +15,9 @@ export class ClassroomsService {
   }
 
   public getAll() {
-    return this.db(classroomsTable).select('*');
+    return this.db(classroomsTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {

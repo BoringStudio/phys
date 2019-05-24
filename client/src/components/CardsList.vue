@@ -86,18 +86,6 @@ export default class CardsList extends Vue {
   })
   private readonly properties!: PaginationProperties;
 
-  @Watch('properties', {
-    immediate: true,
-    deep: true
-  })
-  private onPropertiesChanged(
-    val: PaginationProperties,
-    last: PaginationProperties
-  ) {
-    this._properties = val;
-    this.uniqueKey++;
-  }
-
   public setLoader(loader?: (perPage: number, page: number) => any) {
     this.loader = loader;
   }
@@ -109,6 +97,18 @@ export default class CardsList extends Vue {
     if (this.loader != null) {
       await this.loader(this.properties.perPage, this.properties.page);
     }
+  }
+
+  @Watch('properties', {
+    immediate: true,
+    deep: true
+  })
+  private onPropertiesChanged(
+    val: PaginationProperties,
+    last: PaginationProperties
+  ) {
+    this._properties = val;
+    this.uniqueKey++;
   }
 }
 </script>

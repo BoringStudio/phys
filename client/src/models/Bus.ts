@@ -1,7 +1,7 @@
-import { ClassroomEvent } from '@/model/Classroom';
-import { TestEvent } from '@/model/Test';
-import { StudentEvent } from '@/model/Student';
-import { GroupEvent } from '@/model/Group';
+import { ClassroomEvent } from '@/models/managers/Classroom';
+import { TestEvent } from '@/models/managers/Test';
+import { StudentEvent } from '@/models/managers/Student';
+import { GroupEvent } from '@/models/managers/Group';
 
 type BusEvent = ClassroomEvent | TestEvent | StudentEvent | GroupEvent;
 

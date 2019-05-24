@@ -12,7 +12,9 @@ export class LessonsService {
   }
 
   public getAll() {
-    return this.db(lessonsTable).select('*');
+    return this.db(lessonsTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {
