@@ -50,8 +50,8 @@ export default class GroupInput extends Vue {
     this.groups = await this.$state.groupManager.search(input, 5);
   }
 
-  private onSelect(group: Group) {
-    this.$emit('input', group.id);
+  private onSelect(id: number) {
+    this.$emit('input', id);
   }
 
   private serializeGroup(group: Group) {

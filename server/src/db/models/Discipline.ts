@@ -1,4 +1,4 @@
-import { Length, IsInt } from 'class-validator';
+import { Length, IsInt, IsArray } from 'class-validator';
 
 export class Discipline {
   public id: number;
@@ -21,4 +21,12 @@ export class DisciplineEditionInfo {
 export class DisciplineTestInfo {
   @IsInt()
   public testId: number;
+}
+
+export class DisciplineTestsInfo {
+  @IsArray()
+  @IsInt({
+    each: true
+  })
+  public testIds: number[];
 }

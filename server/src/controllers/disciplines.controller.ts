@@ -19,7 +19,8 @@ import { AlreadyExistsError } from '../errors';
 import {
   DisciplineCreationInfo,
   DisciplineEditionInfo,
-  DisciplineTestInfo
+  DisciplineTestInfo,
+  DisciplineTestsInfo
 } from '@/db/models/Discipline';
 import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
@@ -87,6 +88,20 @@ export class DisciplinesController {
       await this.disciplines.addTest(id, data.testId);
       return {};
     } catch (e) {
+      return;
+    }
+  }
+
+  @Put('/discipline/:id/tests')
+  public async editTests(
+    @Param('id') id: any,
+    @Body() data: DisciplineTestsInfo
+  ) {
+    try {
+      await this.disciplines.updateTests(id, data.testIds);
+      return {};
+    } catch (e) {
+      console.log(e);
       return;
     }
   }

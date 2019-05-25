@@ -1,4 +1,6 @@
 import knex from 'knex';
+import _ from 'underscore';
+
 import { Connection } from '../connection';
 import {
   DisciplineCreationInfo,
@@ -70,6 +72,28 @@ export class DisciplinesService {
       discipline: disciplineId,
       test: testId
     });
+  }
+
+  public async updateTests(disciplineId: number, testIds: number[]) {
+    const existing = (await this.db(disciplineTestsTable)
+      .where('discipline', disciplineId)
+      .select('test')).map((v: { test: number }) => v.test);
+
+    const toDelete = _.difference(existing, testIds);
+    const toInsert = _.difference(testIds, existing);
+
+    await Promise.all([
+      this.db(disciplineTestsTable)
+        .whereIn('test', toDelete)
+        .andWhere('discipline', disciplineId)
+        .delete(),
+      this.db(disciplineTestsTable).insert(
+        toInsert.map((id) => ({
+          test: id,
+          discipline: disciplineId
+        }))
+      )
+    ]);
   }
 
   public removeTest(disciplineId: number, testId: number) {
