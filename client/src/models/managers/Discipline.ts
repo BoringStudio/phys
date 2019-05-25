@@ -1,6 +1,7 @@
 import axios from 'axios';
 import bus from '@/models/Bus';
 import { Omit } from '../Stuff';
+import { ITestData, Test } from './Test';
 
 export interface IDisciplineData {
   id: number;
@@ -24,7 +25,8 @@ export class Discipline implements IDisciplineData {
 export type DisciplineEvent =
   | 'discipline_created'
   | 'discipline_updated'
-  | 'discipline_removed';
+  | 'discipline_removed'
+  | 'discipline_tests_updated';
 
 export class DisciplineManager {
   public async fetchAll() {
@@ -36,6 +38,16 @@ export class DisciplineManager {
   public async fetchOne(id: number) {
     const res = await axios.get<IDisciplineData>(`discipline/${id}`);
     return new Discipline(res.data);
+  }
+
+  public async fetchTests(id: number) {
+    const res = await axios.get<number[]>(`discipline/${id}/tests`);
+    return res.data;
+  }
+
+  public async updateTests(id: number, testIds: number[]) {
+    await axios.put(`discipline/${id}/tests`, { testIds });
+    bus.fire('discipline_tests_updated', { id, testIds });
   }
 
   public async create(data: Omit<IDisciplineData, 'id'>) {

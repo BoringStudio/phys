@@ -5,3 +5,9 @@ export class AlreadyExistsError extends HttpError {
     super(400, 'already exists');
   }
 }
+
+export class HaveDependenciesError extends HttpError {
+  constructor() {
+    super(400, 'have dependencies');
+  }
+}

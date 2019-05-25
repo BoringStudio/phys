@@ -4,10 +4,27 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Discipline } from '@/models/managers/Discipline';
 import { updateIfExists } from '@/models/Stuff';
+import state from '@/models/State';
 
 import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
 import DisciplineModal from '@/components/DisciplineModal.vue';
+
+class DisciplineModalData extends Discipline {
+  public testIds: number[] = [];
+
+  constructor(discipline?: Discipline) {
+    super(discipline);
+  }
+
+  public async fillIds() {
+    if (this.id < 0) {
+      return;
+    }
+
+    this.testIds = await state.disciplineManager.fetchTests(this.id);
+  }
+}
 
 @Component({
   components: {
@@ -32,37 +49,46 @@ export default class DisciplinesPage extends Vue {
 
   private async mounted() {
     this.disciplineModal = this.$refs['discipline-modal'] as DisciplineModal;
-    this.disciplineModal.$on('submit', async (discipline: Discipline) => {
-      this.disciplineModal.setInProcess(true);
+    this.disciplineModal.$on(
+      'submit',
+      async (discipline: DisciplineModalData) => {
+        this.disciplineModal.setInProcess(true);
 
-      const create: boolean = discipline.id < 0;
+        const create: boolean = discipline.id < 0;
 
-      try {
-        if (create) {
-          await this.$state.disciplineManager.create(discipline);
-        } else {
-          await this.$state.disciplineManager.update(discipline);
+        try {
+          const action = create
+            ? this.$state.disciplineManager.create
+            : this.$state.disciplineManager.update;
+
+          const res = await action(discipline);
+          await this.$state.disciplineManager.updateTests(
+            res.id,
+            discipline.testIds
+          );
+
+          this.disciplineModal.setVisible(false);
+        } catch (e) {
+          this.$notify({
+            title: `Невозможно ${create ? 'создать' : 'изменить'} дисциплину`,
+            type: 'error'
+          });
+          this.disciplineModal.setInProcess(false);
         }
-
-        this.disciplineModal.setVisible(false);
-      } catch (e) {
-        this.$notify({
-          title: `Невозможно ${create ? 'создать' : 'изменить'} дисциплину`,
-          type: 'error'
-        });
-        this.disciplineModal.setInProcess(false);
       }
-    });
+    );
 
     this.disciplines = await this.$state.disciplineManager.fetchAll();
   }
 
   public addDiscipline() {
-    this.disciplineModal.show(new Discipline());
+    this.disciplineModal.show(new DisciplineModalData());
   }
 
-  public editDiscipline(discipline: Discipline) {
-    this.disciplineModal.show(discipline);
+  public async editDiscipline(discipline: Discipline) {
+    const modalData = new DisciplineModalData(discipline);
+    await modalData.fillIds();
+    this.disciplineModal.show(modalData);
   }
 
   public async removeDiscipline(discipline: Discipline) {

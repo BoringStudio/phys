@@ -6,7 +6,6 @@ import {
   DisciplineCreationInfo,
   DisciplineEditionInfo
 } from '../models/Discipline';
-import { testsTable } from './tests.service';
 
 const disciplinesTable = 'disciplines';
 const disciplineTestsTable = 'discipline_tests';
@@ -57,14 +56,9 @@ export class DisciplinesService {
 
   public getTests(id: number) {
     return this.db(disciplineTestsTable)
-      .join(testsTable, (qb) => {
-        qb.on(`${disciplineTestsTable}.test`, `${testsTable}.id`).andOn(
-          `${disciplineTestsTable}.discipline`,
-          this.db.raw('?', [id])
-        );
-      })
-      .select(`${testsTable}.*`)
-      .orderBy('id');
+      .select('test')
+      .where('discipline', id)
+      .orderBy('test');
   }
 
   public addTest(disciplineId: number, testId: number) {

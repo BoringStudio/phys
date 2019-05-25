@@ -15,7 +15,7 @@ import { IsInt } from 'class-validator';
 
 import { injector } from '@/server';
 import { DisciplinesService } from '@/db/services/disciplines.service';
-import { AlreadyExistsError } from '../errors';
+import { AlreadyExistsError, HaveDependenciesError } from '../errors';
 import {
   DisciplineCreationInfo,
   DisciplineEditionInfo,
@@ -71,14 +71,21 @@ export class DisciplinesController {
   }
 
   @Delete('/discipline/:id')
+  @OnUndefined(HaveDependenciesError)
   public async remove(@Param('id') id: any) {
-    await this.disciplines.remove(id);
-    return {};
+    try {
+      await this.disciplines.remove(id);
+      return {};
+    } catch (e) {
+      return;
+    }
   }
 
   @Get('/discipline/:id/tests')
   public async getTests(@Param('id') id: any) {
-    return await this.disciplines.getTests(id);
+    return (await this.disciplines.getTests(id)).map(
+      (v: { test: number }) => v.test
+    );
   }
 
   @Post('/discipline/:id/test')
@@ -101,7 +108,6 @@ export class DisciplinesController {
       await this.disciplines.updateTests(id, data.testIds);
       return {};
     } catch (e) {
-      console.log(e);
       return;
     }
   }
