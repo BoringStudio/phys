@@ -7,21 +7,15 @@ import { ClassroomManager } from './managers/Classroom';
 import { TestManager } from './managers/Test';
 import { StudentManager } from './managers/Student';
 import { GroupManager } from './managers/Group';
+import { DisciplineManager } from './managers/Discipline';
 
 export class State {
-  public userManager: UserManager;
-  public classroomManager: ClassroomManager;
-  public testManager: TestManager;
-  public groupManager: GroupManager;
-  public studentManager: StudentManager;
-
-  constructor() {
-    this.userManager = new UserManager();
-    this.classroomManager = new ClassroomManager();
-    this.testManager = new TestManager();
-    this.groupManager = new GroupManager();
-    this.studentManager = new StudentManager();
-  }
+  public userManager: UserManager = new UserManager();
+  public classroomManager: ClassroomManager = new ClassroomManager();
+  public testManager: TestManager = new TestManager();
+  public groupManager: GroupManager = new GroupManager();
+  public studentManager: StudentManager = new StudentManager();
+  public disciplineManager: DisciplineManager = new DisciplineManager();
 }
 
 const state = new State();

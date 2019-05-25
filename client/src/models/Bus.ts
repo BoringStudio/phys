@@ -2,8 +2,14 @@ import { ClassroomEvent } from '@/models/managers/Classroom';
 import { TestEvent } from '@/models/managers/Test';
 import { StudentEvent } from '@/models/managers/Student';
 import { GroupEvent } from '@/models/managers/Group';
+import { DisciplineEvent } from '@/models/managers/Discipline';
 
-type BusEvent = ClassroomEvent | TestEvent | StudentEvent | GroupEvent;
+type BusEvent =
+  | ClassroomEvent
+  | TestEvent
+  | StudentEvent
+  | GroupEvent
+  | DisciplineEvent;
 
 type BusEventHandler = (data?: any) => void;
 

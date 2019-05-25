@@ -8,6 +8,7 @@ import StudentsPage from '@/views/StudentsPage/index.vue';
 import GroupsPage from '@/views/GroupsPage/index.vue';
 import TestsPage from '@/views/TestsPage/index.vue';
 import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
+import DisciplinesPage from '@/views/DisciplinesPage/index.vue';
 
 import state from '@/models/State';
 
@@ -43,6 +44,11 @@ const router = new Router({
       path: '/tests',
       name: 'tests',
       component: TestsPage
+    },
+    {
+      path: '/disciplines',
+      name: 'disciplines',
+      component: DisciplinesPage
     },
     {
       path: '/classrooms',
