@@ -21,7 +21,7 @@ export default class GroupsPage extends Vue {
   private groupsList!: CardsList;
 
   private groups: Group[] = [];
-  private groupsPagination: PaginationProperties = new PaginationProperties(2);
+  private groupsPagination: PaginationProperties = new PaginationProperties(15);
 
   private async created() {
     this.$bus.on('group_updated', (group: Group) => {

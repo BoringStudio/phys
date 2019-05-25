@@ -19,6 +19,17 @@ import { AlreadyExistsError } from '../errors';
 import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
 import { PaginationQueryParams } from '@/pagination';
+import { IsNumberString, IsOptional, IsString } from 'class-validator';
+
+class GroupsSearchParams {
+  @IsOptional()
+  @IsNumberString()
+  public limit: number;
+
+  @IsOptional()
+  @IsString()
+  public match: string;
+}
 
 @JsonController()
 @UseBefore(AuthMiddleware)
@@ -32,6 +43,24 @@ export class GroupsController {
     }
 
     return await this.groups.getPage(perPage, page);
+  }
+
+  @Get('/groups/search')
+  public async search(@QueryParams() { match, limit }: GroupsSearchParams) {
+    if (match == null || limit == null) {
+      return [];
+    }
+
+    let decoded = '';
+
+    try {
+      decoded = decodeURIComponent(match);
+    } catch (e) {
+      console.log(e);
+      return [];
+    }
+
+    return await this.groups.search(decoded, limit);
   }
 
   @Get('/groups/total')
@@ -52,6 +81,7 @@ export class GroupsController {
       const [id] = await this.groups.create(data);
       return id;
     } catch (e) {
+      console.log(e);
       return;
     }
   }
@@ -69,7 +99,7 @@ export class GroupsController {
 
   @Delete('/group/:id')
   public async remove(@Param('id') id: any) {
-    const res = await this.groups.remove(id);
+    await this.groups.remove(id);
     return {};
   }
 }

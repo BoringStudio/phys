@@ -85,7 +85,7 @@ export default class LogPage extends Vue {
       week += 6;
     }
 
-    for (let i = 0; i < 10; ++i) {
+    /*for (let i = 0; i < 10; ++i) {
       const sampleStudent = new Student(
         'Иванов',
         'Иван',
@@ -97,11 +97,11 @@ export default class LogPage extends Vue {
       this.fillStudent(sampleStudent);
 
       this.students.push(sampleStudent);
-    }
+    }*/
   }
 
   private fillStudent(student: Student) {
-    student.modules = this.modules.map((m) => {
+    /*student.modules = this.modules.map((m) => {
       const res = new Module(m.position);
       res.marks = m.marks.map((v) => ({ value: v.value }));
       return res;
@@ -109,12 +109,12 @@ export default class LogPage extends Vue {
 
     student.testMarks = Array.apply(null, Array(this.tests.length)).map(() => ({
       value: null
-    }));
+    }));*/
   }
 
   private get filteredStudents() {
     return this.students.filter((s) => {
-      if (this.filterString.length === 0) {
+      /*if (this.filterString.length === 0) {
         return true;
       }
 
@@ -123,7 +123,7 @@ export default class LogPage extends Vue {
         (w) =>
           s.fullName.toLowerCase().includes(w) ||
           s.group.toLowerCase().includes(w)
-      );
+      );*/
 
       return false;
     });
@@ -146,13 +146,15 @@ export default class LogPage extends Vue {
   }
 
   private getLessonInstanceTitle() {
-    return `${
+    /*return `${
       this.$state.currentInstance.lesson
         ? this.$state.currentInstance.lesson.name
         : ''
     } ${this.$state.currentInstance.place}, ${
       this.$state.currentInstance.type
-    }`;
+    }`;*/
+
+    return '';
   }
 }
 </script>

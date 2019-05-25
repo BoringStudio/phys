@@ -46,6 +46,14 @@ export class GroupManager {
     return res.data.map((data) => new Group(data));
   }
 
+  public async search(value: string, limit: number = 10) {
+    const res = await axios.get<IGroupData[]>(
+      `groups/search?match=${encodeURIComponent(value)}&limit=${limit}`
+    );
+
+    return res.data.map((data) => new Group(data));
+  }
+
   public async fetchOne(id: number) {
     const res = await axios.get<IGroupData>(`group/${id}`);
     return new Group(res.data);

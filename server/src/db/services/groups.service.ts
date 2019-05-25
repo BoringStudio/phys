@@ -32,6 +32,14 @@ export class GroupsService {
       .first();
   }
 
+  public search(match: string, limit: number) {
+    return this.db(groupsTable)
+      .select('*')
+      .whereRaw('LOWER(name) LIKE LOWER(?)', [`%${match}%`])
+      .orderBy('id')
+      .limit(limit);
+  }
+
   public getSingle(id: number) {
     return this.db(groupsTable)
       .select('*')

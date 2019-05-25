@@ -17,7 +17,7 @@
       <hr>
 
       <b-form-group label="Учебная группа">
-        <b-form-input type="text" autocomplete="false" v-model="data.group"/>
+        <group-input v-model="data.group"/>
       </b-form-group>
     </template>
   </general-modal>
@@ -25,10 +25,13 @@
 
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
+
+import GroupInput from './GroupInput.vue';
 import GeneralModal, { ModalMixin } from './GeneralModal.vue';
 
 @Component({
   components: {
+    GroupInput,
     GeneralModal
   }
 })

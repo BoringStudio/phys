@@ -9,6 +9,10 @@ import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-vue/dist/bootstrap-vue.min.css';
 
+import { ModelSelect, ModelListSelect } from 'vue-search-select';
+Vue.component('b-model-select', ModelSelect);
+Vue.component('b-model-list-select', ModelListSelect);
+
 import Notifications from 'vue-notification';
 Vue.use(Notifications);
 
