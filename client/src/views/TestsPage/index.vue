@@ -5,11 +5,13 @@ import { Component, Vue } from 'vue-property-decorator';
 import { Test } from '@/models/managers/Test';
 import { updateIfExists } from '@/models/Stuff';
 
+import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
 import TestModal from '@/components/TestModal.vue';
 
 @Component({
   components: {
+    Page,
     CardsList,
     TestModal
   }

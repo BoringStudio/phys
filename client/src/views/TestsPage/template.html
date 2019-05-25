@@ -1,18 +1,13 @@
-<div class="page tests-page">
-  <h3>
-    <span>Нормативы</span>
-    <b-button class="ml-3" variant="success" @click="addTest">
+<page title="Нормативы">
+  <template v-slot:actions>
+    <b-button variant="success" @click="addTest">
       <span>Добавить</span>
     </b-button>
-    <hr />
-  </h3>
-  <b-row class="justify-content-md-center">
-    <b-col cols="12" md="8" lg="6">
-      <cards-list :items="tests" editable @edit="editTest" @remove="removeTest">
-        <template v-slot="{ item }">{{ item.name }}</template>
-      </cards-list>
-    </b-col>
-  </b-row>
+  </template>
 
-  <test-modal ref="test-modal"/>
-</div>
+  <cards-list :items="tests" editable @edit="editTest" @remove="removeTest">
+    <template v-slot="{ item }">{{ item.name }}</template>
+  </cards-list>
+
+  <test-modal ref="test-modal"></test-modal>
+</page>
