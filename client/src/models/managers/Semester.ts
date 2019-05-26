@@ -4,6 +4,8 @@ import { Omit } from '../Stuff';
 
 import moment from 'moment-timezone';
 
+import { Module, IModuleData } from './Module';
+
 export interface ISemesterData {
   id: number;
   begin: Date;
@@ -33,6 +35,25 @@ export class Semester implements ISemesterData {
   }
 }
 
+export interface ISemesterWithModulesData extends ISemesterData {
+  modules: Module[];
+}
+
+export class SemesterWithModules extends Semester
+  implements ISemesterWithModulesData {
+  public modules: Module[];
+
+  constructor(data?: ISemesterWithModulesData) {
+    super(data);
+
+    this.modules = (data && data.modules) || [
+      new Module(),
+      new Module(),
+      new Module()
+    ];
+  }
+}
+
 export type SemesterEvent =
   | 'semester_created'
   | 'semester_updated'
@@ -49,18 +70,26 @@ export class SemesterManager {
     return new Semester(res.data);
   }
 
-  public async create(data: Omit<ISemesterData, 'id'>) {
-    const res = await axios.post<number>('semester', data);
+  public async fetchModules(id: number) {
+    const res = await axios.get<IModuleData[]>(`semester/${id}/modules`);
+    return res.data.map((data) => new Module(data));
+  }
+
+  public async create(data: Omit<ISemesterWithModulesData, 'id'>) {
+    const res = await axios.post<{ id: number; moduleIds: number[] }>(
+      'semester',
+      data
+    );
 
     const semester = new Semester({
       ...data,
-      id: res.data
+      id: res.data.id
     });
     bus.fire('semester_created', semester);
     return semester;
   }
 
-  public async update(data: ISemesterData) {
+  public async update(data: ISemesterWithModulesData) {
     await axios.put('semester', data);
     const semester = new Semester(data);
 

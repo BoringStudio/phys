@@ -2,7 +2,7 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { ModuleCreationInfo, ModuleEditionInfo } from '../models/Module';
 
-const modulesTable = 'modules';
+export const modulesTable = 'modules';
 
 export class ModulesService {
   private db: knex;
@@ -31,7 +31,8 @@ export class ModulesService {
       .insert({
         semester: data.semester,
         begin: data.begin,
-        end: data.end
+        end: data.end,
+        isActive: data.isActive
       })
       .returning('id');
   }

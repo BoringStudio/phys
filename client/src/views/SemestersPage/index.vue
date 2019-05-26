@@ -2,7 +2,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Semester } from '@/models/managers/Semester';
+import { Semester, SemesterWithModules } from '@/models/managers/Semester';
 import { updateIfExists } from '@/models/Stuff';
 
 import Page from '@/components/Page.vue';
@@ -32,7 +32,7 @@ export default class SemestersPage extends Vue {
 
   private async mounted() {
     this.semesterModal = this.$refs['semester-modal'] as SemesterModal;
-    this.semesterModal.$on('submit', async (semester: Semester) => {
+    this.semesterModal.$on('submit', async (semester: SemesterWithModules) => {
       this.semesterModal.setInProcess(true);
 
       const create: boolean = semester.id < 0;
@@ -58,11 +58,17 @@ export default class SemestersPage extends Vue {
   }
 
   private addSemester() {
-    this.semesterModal.show(new Semester());
+    this.semesterModal.show(new SemesterWithModules());
   }
 
-  private editSemester(semester: Semester) {
-    this.semesterModal.show(semester);
+  private async editSemester(semester: Semester) {
+    const modules = await this.$state.semesterManager.fetchModules(semester.id);
+    this.semesterModal.show(
+      new SemesterWithModules({
+        ...semester,
+        modules
+      })
+    );
   }
 
   private async removeSemester(item: Semester) {

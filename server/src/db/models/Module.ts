@@ -26,6 +26,9 @@ export class ModuleCreationInfo {
   @Validate(SameExistance, ['begin'])
   @IsDateString()
   public end: Date;
+
+  @IsBoolean()
+  public isActive?: boolean;
 }
 
 export class ModuleEditionInfo {

@@ -26,7 +26,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="i in 5">
+          <tr v-for="i in 5" :key="`mark-${i}`">
             <td class="text-center align-middle">{{ i }}</td>
             <td>
               <b-form-input type="number" autocomplete="false" v-model="data.maleMarks[i - 1]"></b-form-input>

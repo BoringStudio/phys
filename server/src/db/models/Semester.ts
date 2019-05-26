@@ -1,6 +1,16 @@
-import { IsInt, Validate, IsDateString } from 'class-validator';
+import {
+  IsInt,
+  Validate,
+  IsDateString,
+  IsOptional,
+  ValidateNested,
+  IsArray,
+  IsBoolean
+} from 'class-validator';
 
 import { IsBeforeConstraint } from '@/constraints';
+
+import { ModuleCreationInfo } from './Module';
 
 export class Semester {
   public id: number;
@@ -17,6 +27,19 @@ export class SemesterCreationInfo {
   public end: Date;
 }
 
+class SemesterModuleCreationInfo extends ModuleCreationInfo {
+  @IsOptional()
+  public semester: number;
+}
+
+export class SemesterWithModulesCreationInfo extends SemesterCreationInfo {
+  @IsArray()
+  @ValidateNested({
+    each: true
+  })
+  public modules: SemesterModuleCreationInfo[];
+}
+
 export class SemesterEditionInfo {
   @IsInt()
   public id: number;
@@ -28,3 +51,19 @@ export class SemesterEditionInfo {
   @IsDateString()
   public end: Date;
 }
+
+export class SemesterWithModulesEditionInfo extends SemesterEditionInfo {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({
+    each: true
+  })
+  public modules: SemesterEditionInfo[];
+}
+
+export const checkAllInRange = (
+  target: { begin: Date; end: Date },
+  ranges: Array<{ begin: Date; end: Date }>
+) => {
+  return ranges.every((m) => m.begin >= target.begin && m.end <= target.end);
+};
