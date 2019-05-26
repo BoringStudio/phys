@@ -9,6 +9,8 @@ import { StudentManager } from './managers/Student';
 import { GroupManager } from './managers/Group';
 import { DisciplineManager } from './managers/Discipline';
 import { MarkManager } from './managers/Mark';
+import { ModuleManager } from './managers/Module';
+import { SemesterManager } from './managers/Semester';
 
 export class State {
   public userManager: UserManager = new UserManager();
@@ -18,6 +20,8 @@ export class State {
   public studentManager: StudentManager = new StudentManager();
   public disciplineManager: DisciplineManager = new DisciplineManager();
   public markManager: MarkManager = new MarkManager();
+  public moduleManager: ModuleManager = new ModuleManager();
+  public semesterManager: SemesterManager = new SemesterManager();
 }
 
 const state = new State();

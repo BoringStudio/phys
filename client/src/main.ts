@@ -17,8 +17,13 @@ Vue.component('b-multi-select', MultiSelect);
 import Notifications from 'vue-notification';
 Vue.use(Notifications);
 
+import Datepicker from 'vuejs-datepicker';
+Vue.component('datepicker', Datepicker);
+
 import VueMoment from 'vue-moment';
 import 'moment/locale/ru';
+import moment from 'moment-timezone';
+moment.tz.setDefault();
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faEdit, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';

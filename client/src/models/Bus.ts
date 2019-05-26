@@ -4,6 +4,8 @@ import { StudentEvent } from '@/models/managers/Student';
 import { GroupEvent } from '@/models/managers/Group';
 import { DisciplineEvent } from '@/models/managers/Discipline';
 import { MarkEvent } from '@/models/managers/Mark';
+import { ModuleEvent } from '@/models/managers/Module';
+import { SemesterEvent } from '@/models/managers/Semester';
 
 type BusEvent =
   | ClassroomEvent
@@ -11,7 +13,9 @@ type BusEvent =
   | StudentEvent
   | GroupEvent
   | DisciplineEvent
-  | MarkEvent;
+  | MarkEvent
+  | ModuleEvent
+  | SemesterEvent;
 
 type BusEventHandler = (data?: any) => void;
 

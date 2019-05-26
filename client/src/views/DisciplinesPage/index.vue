@@ -81,17 +81,17 @@ export default class DisciplinesPage extends Vue {
     this.disciplines = await this.$state.disciplineManager.fetchAll();
   }
 
-  public addDiscipline() {
+  private addDiscipline() {
     this.disciplineModal.show(new DisciplineModalData());
   }
 
-  public async editDiscipline(discipline: Discipline) {
+  private async editDiscipline(discipline: Discipline) {
     const modalData = new DisciplineModalData(discipline);
     await modalData.fillIds();
     this.disciplineModal.show(modalData);
   }
 
-  public async removeDiscipline(discipline: Discipline) {
+  private async removeDiscipline(discipline: Discipline) {
     if (!confirm('Вы действительно хотите удалить дисциплину?')) {
       return;
     }

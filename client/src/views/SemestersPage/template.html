@@ -1,0 +1,20 @@
+<page title="Семестры">
+  <template v-slot:actions>
+    <b-button variant="success" @click="addSemester">
+      <span>Добавить</span>
+    </b-button>
+  </template>
+
+  <cards-list
+    :items="semesters"
+    editable
+    @edit="editSemester"
+    @remove="removeSemester"
+  >
+    <template v-slot="{ item }">
+      {{ item.rangeName }}
+    </template>
+  </cards-list>
+
+  <semester-modal ref="semester-modal"></semester-modal>
+</page>

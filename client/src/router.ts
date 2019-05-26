@@ -10,6 +10,7 @@ import TestsPage from '@/views/TestsPage/index.vue';
 import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
 import DisciplinesPage from '@/views/DisciplinesPage/index.vue';
 import MarksPage from '@/views/MarksPage/index.vue';
+import SemestersPage from '@/views/SemestersPage/index.vue';
 
 import state from '@/models/State';
 
@@ -60,6 +61,11 @@ const router = new Router({
       path: '/classrooms',
       name: 'classrooms',
       component: ClassroomsPage
+    },
+    {
+      path: '/semesters',
+      name: 'semesters',
+      component: SemestersPage
     },
     {
       path: '/login',
