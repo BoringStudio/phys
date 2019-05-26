@@ -1,7 +1,6 @@
 import axios from 'axios';
 import bus from '@/models/Bus';
 import { Omit } from '../Stuff';
-import { ITestData, Test } from './Test';
 
 export interface IDisciplineData {
   id: number;
@@ -31,7 +30,6 @@ export type DisciplineEvent =
 export class DisciplineManager {
   public async fetchAll() {
     const res = await axios.get<IDisciplineData[]>('disciplines');
-
     return res.data.map((data) => new Discipline(data));
   }
 

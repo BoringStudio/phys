@@ -3,13 +3,15 @@ import { TestEvent } from '@/models/managers/Test';
 import { StudentEvent } from '@/models/managers/Student';
 import { GroupEvent } from '@/models/managers/Group';
 import { DisciplineEvent } from '@/models/managers/Discipline';
+import { MarkEvent } from '@/models/managers/Mark';
 
 type BusEvent =
   | ClassroomEvent
   | TestEvent
   | StudentEvent
   | GroupEvent
-  | DisciplineEvent;
+  | DisciplineEvent
+  | MarkEvent;
 
 type BusEventHandler = (data?: any) => void;
 

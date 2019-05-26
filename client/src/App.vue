@@ -105,6 +105,10 @@ export default class App extends Vue {
         title: 'Дисциплины'
       },
       {
+        page: 'marks',
+        title: 'Оценки'
+      },
+      {
         page: 'classrooms',
         title: 'Аудитории'
       }
