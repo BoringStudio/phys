@@ -8,7 +8,8 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  UseBefore
+  UseBefore,
+  QueryParams
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -17,14 +18,43 @@ import { StudentCreationInfo, StudentEditionInfo } from '@/db/models/Student';
 import { AlreadyExistsError } from '../errors';
 import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
+import { PaginationQueryParams, SearchParams } from '@/pagination';
+
 @JsonController()
 @UseBefore(AuthMiddleware)
 export class StudentsController {
   private students: StudentsService = injector.get(StudentsService);
 
   @Get('/students')
-  public async getAll() {
-    return await this.students.getAll();
+  public async getAll(@QueryParams() { page, perPage }: PaginationQueryParams) {
+    if (page == null || perPage == null) {
+      return await this.students.getAll();
+    }
+
+    return await this.students.getPage(perPage, page);
+  }
+
+  @Get('/students/search')
+  public async search(@QueryParams() { match, limit }: SearchParams) {
+    if (match == null || limit == null || match.length === 0) {
+      return [];
+    }
+
+    let decoded = '';
+
+    try {
+      decoded = decodeURIComponent(match);
+    } catch (e) {
+      console.log(e);
+      return [];
+    }
+
+    return await this.students.search(decoded, limit);
+  }
+
+  @Get('/students/total')
+  public async getTotalCount() {
+    return (await this.students.getTotalCount()).count;
   }
 
   @Get('/student/:id')

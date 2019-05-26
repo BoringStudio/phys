@@ -18,18 +18,7 @@ import { GroupCreationInfo, GroupEditionInfo, Group } from '@/db/models/Group';
 import { AlreadyExistsError } from '../errors';
 import { AuthMiddleware } from '@/middlewares/auth.middleware';
 
-import { PaginationQueryParams } from '@/pagination';
-import { IsNumberString, IsOptional, IsString } from 'class-validator';
-
-class GroupsSearchParams {
-  @IsOptional()
-  @IsNumberString()
-  public limit: number;
-
-  @IsOptional()
-  @IsString()
-  public match: string;
-}
+import { PaginationQueryParams, SearchParams } from '@/pagination';
 
 @JsonController()
 @UseBefore(AuthMiddleware)
@@ -46,7 +35,7 @@ export class GroupsController {
   }
 
   @Get('/groups/search')
-  public async search(@QueryParams() { match, limit }: GroupsSearchParams) {
+  public async search(@QueryParams() { match, limit }: SearchParams) {
     if (match == null || limit == null) {
       return [];
     }

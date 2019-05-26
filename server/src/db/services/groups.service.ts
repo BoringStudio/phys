@@ -28,7 +28,6 @@ export class GroupsService {
   public getTotalCount() {
     return this.db(groupsTable)
       .count('* as count')
-      .from(groupsTable)
       .first();
   }
 
