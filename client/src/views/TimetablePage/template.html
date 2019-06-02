@@ -26,10 +26,10 @@
                 @click="openLog(instance)"
               >
                 <b-col class="item-centered">
-                  <span>{{ classrooms[instance.classroom].name }}</span>
+                  <span>{{ getLessonClassroomName(instance) }}</span>
                 </b-col>
                 <b-col class="item-centered">
-                  <span>{{ disciplines[instance.discipline].name }}</span>
+                  <span>{{ getLessonDisciplineName(instance) }}</span>
                 </b-col>
               </b-row>
 

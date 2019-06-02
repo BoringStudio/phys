@@ -38,7 +38,7 @@ export class LessonsService {
       .insert({
         semester: data.semester,
         teacher: data.teacher,
-        descipline: data.descipline,
+        discipline: data.discipline,
         classroom: data.classroom,
         day: data.day,
         number: data.number
@@ -51,7 +51,7 @@ export class LessonsService {
       .update({
         semester: data.semester,
         teacher: data.teacher,
-        descipline: data.descipline,
+        discipline: data.discipline,
         classroom: data.classroom,
         day: data.day,
         number: data.number

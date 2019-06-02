@@ -7,7 +7,8 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  Ctx
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -18,9 +19,10 @@ import {
   alreadyExistsErrorHandler,
   haveDependenciesErrorHandler
 } from '../errors';
-import { IsInt } from 'class-validator';
 import { ParametersService } from '@/db/services/parameters.service';
 import { ParameterType } from '@/db/models/Parameter';
+import { Context } from 'koa';
+import { User } from '@/db/models/User';
 
 @JsonController()
 export class LessonsController {
@@ -56,7 +58,23 @@ export class LessonsController {
   }
 
   @Post('/lesson')
-  public async create(@Body() data: LessonCreationInfo) {
+  public async create(@Body() data: LessonCreationInfo, @Ctx() ctx: Context) {
+    const user = ctx.state.user as User;
+
+    if (!user.fullAccess || data.semester === -1 || data.semester == null) {
+      const res = await this.parameters
+        .get(ParameterType.CURRENT_SEMESTER)
+        .catch(simpleErrorHandler);
+
+      if (res != null) {
+        data.semester = parseInt(res.value, 10);
+      }
+    }
+
+    if (!user.fullAccess || data.teacher === -1 || data.teacher == null) {
+      data.teacher = user.id;
+    }
+
     const [id] = await this.lessons
       .create(data)
       .catch(alreadyExistsErrorHandler);

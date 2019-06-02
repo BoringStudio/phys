@@ -9,6 +9,10 @@
         <b-form-select v-model="data.number" :options="numberOptions"/>
       </b-form-group>
 
+      <b-form-group label="Аудитория">
+        <classroom-input v-model="data.classroom"/>
+      </b-form-group>
+
       <b-form-group label="Дисциплина">
         <discipline-input v-model="data.discipline"/>
       </b-form-group>
@@ -19,6 +23,7 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 
+import ClassroomInput from './ClassroomInput.vue';
 import DisciplineInput from './DisciplineInput.vue';
 import GeneralModal, { ModalMixin } from './GeneralModal.vue';
 import { getDayName, DayNumber } from '../models/Stuff';
@@ -26,6 +31,7 @@ import { getDayName, DayNumber } from '../models/Stuff';
 @Component({
   components: {
     GeneralModal,
+    ClassroomInput,
     DisciplineInput
   }
 })

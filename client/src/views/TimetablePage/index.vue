@@ -93,14 +93,36 @@ export default class TimeTablePage extends Vue {
     return getLessonNumberName(num);
   }
 
-  private get days(): (Lesson | null)[][] {
-    const result = Array(6).fill(Array(5).fill([]));
+  private get days() {
+    const result: Lesson[][][] = Array(6)
+      .fill(null)
+      .map(() => {
+        return Array(5)
+          .fill(null)
+          .map(() => []);
+      });
 
     this.lessons.forEach((lesson) => {
       result[lesson.day][lesson.number].push(lesson);
     });
 
     return result;
+  }
+
+  private getLessonClassroomName(lesson: Lesson) {
+    const index = this.classrooms.findIndex(
+      (classroom) => classroom.id === lesson.classroom
+    );
+
+    return index < 0 ? '' : this.classrooms[index].name;
+  }
+
+  private getLessonDisciplineName(lesson: Lesson) {
+    const index = this.disciplines.findIndex(
+      (discipline) => discipline.id === lesson.discipline
+    );
+
+    return index < 0 ? '' : this.disciplines[index].name;
   }
 }
 </script>

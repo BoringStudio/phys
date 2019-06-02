@@ -11,22 +11,24 @@ export class Lesson {
 }
 
 export class LessonCreationInfo {
+  @IsOptional()
   @IsInt()
   public semester: number;
 
+  @IsOptional()
   @IsInt()
   public teacher: number;
 
   @IsInt()
-  public descipline: number;
+  public discipline: number;
 
   @IsInt()
   public classroom: number;
 
-  @IsIn([1, 2, 3, 4, 5, 6])
+  @IsIn([0, 1, 2, 3, 4, 5])
   public day: number;
 
-  @IsIn([1, 2, 3, 4, 5, 6])
+  @IsIn([0, 1, 2, 3, 4, 5])
   public number: number;
 }
 
@@ -44,7 +46,7 @@ export class LessonEditionInfo {
 
   @IsOptional()
   @IsInt()
-  public descipline: number;
+  public discipline: number;
 
   @IsOptional()
   @IsInt()
