@@ -38,6 +38,14 @@ export class DisciplineManager {
     return new Discipline(res.data);
   }
 
+  public async search(value: string, limit: number = 10) {
+    const res = await axios.get<IDisciplineData[]>(
+      `disciplines/search?match=${encodeURIComponent(value)}&limit=${limit}`
+    );
+
+    return res.data.map((data) => new Discipline(data));
+  }
+
   public async fetchTests(id: number) {
     const res = await axios.get<number[]>(`discipline/${id}/tests`);
     return res.data;

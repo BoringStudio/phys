@@ -1,7 +1,10 @@
 <page title="Семестры">
   <template v-slot:actions>
-    <b-button variant="success" @click="addSemester">
+    <b-button variant="success" class="mr-3" @click="addSemester">
       <span>Добавить</span>
+    </b-button>
+    <b-button variant="primary" @click="changeCurrentSemester">
+      <span>Изменить текущий</span>
     </b-button>
   </template>
 
@@ -17,4 +20,5 @@
   </cards-list>
 
   <semester-modal ref="semester-modal"></semester-modal>
+  <current-semester-modal ref="current-semester-modal"></current-semester-modal>
 </page>

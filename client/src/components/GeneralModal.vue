@@ -27,7 +27,7 @@ import { Component, Prop, Vue, Mixins } from 'vue-property-decorator';
 export class ModalMixin extends Vue {
   private modal!: GeneralModal;
 
-  public mounted() {
+  private mounted() {
     this.modal = this.$children[0] as GeneralModal;
     this.modal.$on('submit', (data: any) => {
       this.$emit('submit', data);

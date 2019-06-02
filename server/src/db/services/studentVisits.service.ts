@@ -56,4 +56,21 @@ export class StudentVisitsService {
       })
       .returning('id');
   }
+
+  public update(data: StudentVisitEditionInfo) {
+    return this.db(studentVisitsTable)
+      .update({
+        date: data.date,
+        student: data.student,
+        mark: data.mark,
+        lesson: data.lesson
+      })
+      .where('id', data.id);
+  }
+
+  public remove(id: number) {
+    return this.db(studentVisitsTable)
+      .where('id', id)
+      .delete();
+  }
 }

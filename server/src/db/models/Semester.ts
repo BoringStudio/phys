@@ -4,11 +4,10 @@ import {
   IsDateString,
   IsOptional,
   ValidateNested,
-  IsArray,
-  IsBoolean
+  IsArray
 } from 'class-validator';
 
-import { IsBeforeConstraint } from '@/constraints';
+import { IsBefore } from '@/constraints';
 
 import { ModuleCreationInfo } from './Module';
 
@@ -20,7 +19,7 @@ export class Semester {
 
 export class SemesterCreationInfo {
   @IsDateString()
-  @Validate(IsBeforeConstraint, ['end'])
+  @Validate(IsBefore, ['end'])
   public begin: Date;
 
   @IsDateString()
@@ -45,7 +44,7 @@ export class SemesterEditionInfo {
   public id: number;
 
   @IsDateString()
-  @Validate(IsBeforeConstraint, ['end'])
+  @Validate(IsBefore, ['end'])
   public begin: Date;
 
   @IsDateString()

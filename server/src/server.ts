@@ -1,10 +1,6 @@
 import 'reflect-metadata';
 import Koa from 'koa';
-import {
-  createKoaServer,
-  useContainer,
-  InternalServerError
-} from 'routing-controllers';
+import { createKoaServer, useContainer } from 'routing-controllers';
 import { ReflectiveInjector } from 'injection-js';
 import { Container } from 'typedi';
 
@@ -23,6 +19,8 @@ import { StudentsService } from './db/services/students.service';
 import { TestsService } from './db/services/tests.service';
 import { LessonsService } from './db/services/lessons.service';
 import { MarksService } from './db/services/marks.service';
+import { StudentVisitsService } from './db/services/studentVisits.service';
+import { ParametersService } from './db/services/parameters.service';
 
 import { AuthController } from './controllers/auth.controller';
 import { UsersController } from './controllers/users.controller';
@@ -35,7 +33,10 @@ import { StudentsController } from './controllers/students.controller';
 import { TestsController } from './controllers/tests.controller';
 import { LessonsController } from './controllers/lessons.controller';
 import { MarksController } from './controllers/marks.controller';
+import { StudentVisitsController } from './controllers/studentVisits.controller';
+import { ParametersController } from './controllers/parameters.controller';
 
+import { AuthMiddleware } from './middlewares/auth.middleware';
 import { ErrorMiddleware } from './middlewares/error.middleware';
 import { LoggingMiddleware } from './middlewares/logging.middleware';
 
@@ -49,7 +50,9 @@ export const injector = ReflectiveInjector.resolveAndCreate([
   StudentsService,
   TestsService,
   LessonsService,
-  MarksService
+  MarksService,
+  StudentVisitsService,
+  ParametersService
 ]);
 useContainer(Container);
 
@@ -68,9 +71,11 @@ const app: Koa = createKoaServer({
     StudentsController,
     TestsController,
     LessonsController,
-    MarksController
+    MarksController,
+    StudentVisitsController,
+    ParametersController
   ],
-  middlewares: [ErrorMiddleware, LoggingMiddleware]
+  middlewares: [ErrorMiddleware, LoggingMiddleware, AuthMiddleware]
 });
 
 app.listen(config.port);

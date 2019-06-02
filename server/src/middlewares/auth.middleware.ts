@@ -1,26 +1,29 @@
 import Koa from 'koa';
-import { KoaMiddlewareInterface, UnauthorizedError } from 'routing-controllers';
+import { KoaMiddlewareInterface, Middleware } from 'routing-controllers';
 
 import jwt from 'jsonwebtoken';
 
+@Middleware({ type: 'before' })
 export class AuthMiddleware implements KoaMiddlewareInterface {
   public async use(ctx: Koa.Context, next: (err?: any) => Promise<any>) {
-    try {
-      const regex = /^(?:Bearer )?(.*)$/;
-      const matchingResult = regex.exec(ctx.req.headers.authorization);
-      if (matchingResult == null) {
-        throw Error();
+    if (ctx.path !== '/api/auth') {
+      try {
+        const regex = /^(?:Bearer )?(.*)$/;
+        const matchingResult = regex.exec(ctx.req.headers.authorization);
+        if (matchingResult == null) {
+          throw Error();
+        }
+
+        const [, token] = matchingResult;
+
+        ctx.state.user = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        ctx.response.status = 401;
+        ctx.response.body = { name: 'Unauthorized' };
+        return;
       }
-
-      const [, token] = matchingResult;
-
-      ctx.state.user = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      ctx.response.status = 401;
-      ctx.response.body = { name: 'Unauthorized' };
-      return;
     }
 
-    return await next();
+    return next();
   }
 }

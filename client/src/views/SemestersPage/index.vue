@@ -8,16 +8,20 @@ import { updateIfExists } from '@/models/Stuff';
 import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
 import SemesterModal from '@/components/SemesterModal.vue';
+import CurrentSemesterModal from '@/components/CurrentSemesterModal.vue';
+import { ParameterType } from '../../models/managers/Parameters';
 
 @Component({
   components: {
     Page,
     CardsList,
-    SemesterModal
+    SemesterModal,
+    CurrentSemesterModal
   }
 })
 export default class SemestersPage extends Vue {
   private semesterModal!: SemesterModal;
+  private currentSemesterModal!: CurrentSemesterModal;
 
   private semesters: Semester[] = [];
 
@@ -54,6 +58,30 @@ export default class SemestersPage extends Vue {
       }
     });
 
+    this.currentSemesterModal = this.$refs[
+      'current-semester-modal'
+    ] as CurrentSemesterModal;
+    this.currentSemesterModal.$on(
+      'submit',
+      async ({ currentSemesterId }: { currentSemesterId: number }) => {
+        this.currentSemesterModal.setInProcess(true);
+
+        try {
+          await this.$state.parameterManager.update({
+            parameter: ParameterType.CURRENT_SEMESTER,
+            value: currentSemesterId
+          });
+          this.currentSemesterModal.setVisible(false);
+        } catch (e) {
+          this.$notify({
+            title: 'Невозможно изменить текущий семестр',
+            type: 'error'
+          });
+          this.currentSemesterModal.setInProcess(false);
+        }
+      }
+    );
+
     this.semesters = await this.$state.semesterManager.fetchAll();
   }
 
@@ -84,6 +112,21 @@ export default class SemestersPage extends Vue {
         type: 'error'
       });
     }
+  }
+
+  private async changeCurrentSemester() {
+    const [semesters, currentSemesterId] = await Promise.all([
+      this.$state.semesterManager.fetchAll(),
+      this.$state.parameterManager.get(ParameterType.CURRENT_SEMESTER)
+    ]);
+
+    this.currentSemesterModal.show({
+      currentSemesterId: currentSemesterId || -1,
+      semesterOptions: semesters.map((semester) => ({
+        value: semester.id,
+        text: semester.rangeName
+      }))
+    });
   }
 }
 </script>

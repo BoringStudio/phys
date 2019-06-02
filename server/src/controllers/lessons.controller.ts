@@ -7,57 +7,71 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete,
-  UseBefore
+  Delete
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { LessonsService } from '@/db/services/lessons.service';
 import { LessonCreationInfo, LessonEditionInfo } from '@/db/models/Lesson';
-import { AlreadyExistsError } from '../errors';
-import { AuthMiddleware } from '@/middlewares/auth.middleware';
+import {
+  simpleErrorHandler,
+  alreadyExistsErrorHandler,
+  haveDependenciesErrorHandler
+} from '../errors';
+import { IsInt } from 'class-validator';
+import { ParametersService } from '@/db/services/parameters.service';
+import { ParameterType } from '@/db/models/Parameter';
 
 @JsonController()
-@UseBefore(AuthMiddleware)
 export class LessonsController {
   private lessons: LessonsService = injector.get(LessonsService);
+  private parameters: ParametersService = injector.get(ParametersService);
 
   @Get('/lessons')
   public async getAll() {
-    return await this.lessons.getAll();
+    return await this.lessons.getAll().catch(simpleErrorHandler);
+  }
+
+  @Get('/lessons/current_semester')
+  public async getCurrentSemesterLessons() {
+    const res = await this.parameters
+      .get(ParameterType.CURRENT_SEMESTER)
+      .catch(simpleErrorHandler);
+
+    if (res == null) {
+      return [];
+    }
+
+    const semesterId = parseInt(res.value, 10);
+
+    return await this.lessons
+      .getSemesterLessons(semesterId)
+      .catch(simpleErrorHandler);
   }
 
   @Get('/lesson/:id')
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
-    return await this.lessons.getSingle(id);
+    return await this.lessons.getSingle(id).catch(simpleErrorHandler);
   }
 
   @Post('/lesson')
-  @OnUndefined(AlreadyExistsError)
   public async create(@Body() data: LessonCreationInfo) {
-    try {
-      const [id] = await this.lessons.create(data);
-      return id;
-    } catch (e) {
-      return;
-    }
+    const [id] = await this.lessons
+      .create(data)
+      .catch(alreadyExistsErrorHandler);
+    return id;
   }
 
   @Put('/lesson')
-  @OnUndefined(AlreadyExistsError)
   public async update(@Body() data: LessonEditionInfo) {
-    try {
-      await this.lessons.update(data);
-      return {};
-    } catch (e) {
-      return;
-    }
+    await this.lessons.update(data).catch(alreadyExistsErrorHandler);
+    return {};
   }
 
   @Delete('/lesson/:id')
   public async remove(@Param('id') id: any) {
-    await this.lessons.remove(id);
+    await this.lessons.remove(id).catch(haveDependenciesErrorHandler);
     return {};
   }
 }

@@ -11,6 +11,8 @@ import { DisciplineManager } from './managers/Discipline';
 import { MarkManager } from './managers/Mark';
 import { ModuleManager } from './managers/Module';
 import { SemesterManager } from './managers/Semester';
+import { LessonManager } from './managers/Lesson';
+import { ParameterManager } from './managers/Parameters';
 
 export class State {
   public userManager: UserManager = new UserManager();
@@ -22,6 +24,8 @@ export class State {
   public markManager: MarkManager = new MarkManager();
   public moduleManager: ModuleManager = new ModuleManager();
   public semesterManager: SemesterManager = new SemesterManager();
+  public lessonManager: LessonManager = new LessonManager();
+  public parameterManager: ParameterManager = new ParameterManager();
 }
 
 const state = new State();

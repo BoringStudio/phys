@@ -48,4 +48,23 @@ export const sync = (
   }
 };
 
+export type DayNumber = 0 | 1 | 2 | 3 | 4 | 5;
+export type LessonNumber = 0 | 1 | 2 | 3 | 4;
+
+export const getDayName = (num: DayNumber) => {
+  return ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'][
+    num
+  ];
+};
+
+export const getLessonNumberName = (lessonNumber: LessonNumber) => {
+  return [
+    'I - (9:00-10:30)',
+    'II - (10:40-12:10)',
+    'III - (13:00-14:30)',
+    'IV - (14:40-16:10)',
+    'V - (16:20-17:50)'
+  ][lessonNumber];
+};
+
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;

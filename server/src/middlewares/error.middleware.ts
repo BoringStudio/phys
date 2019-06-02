@@ -1,7 +1,7 @@
 import Koa from 'koa';
 import { Middleware, KoaMiddlewareInterface } from 'routing-controllers';
 
-@Middleware({ type: 'before', priority: 100 })
+@Middleware({ type: 'before' })
 export class ErrorMiddleware implements KoaMiddlewareInterface {
   public async use(ctx: Koa.Context, next: (err?: any) => Promise<any>) {
     try {

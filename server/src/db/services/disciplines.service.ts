@@ -32,6 +32,14 @@ export class DisciplinesService {
       .first();
   }
 
+  public search(match: string, limit: number) {
+    return this.db(disciplinesTable)
+      .select('*')
+      .whereRaw('LOWER(name) LIKE LOWER(?)', [`%${match}%`])
+      .orderBy('id')
+      .limit(limit);
+  }
+
   public create(data: DisciplineCreationInfo) {
     return this.db(disciplinesTable)
       .insert({

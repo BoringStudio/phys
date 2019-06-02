@@ -32,6 +32,14 @@ export class ClassroomManager {
     return res.data.map((data) => new Classroom(data));
   }
 
+  public async search(value: string, limit: number = 10) {
+    const res = await axios.get<IClassroomData[]>(
+      `classrooms/search?match=${encodeURIComponent(value)}&limit=${limit}`
+    );
+
+    return res.data.map((data) => new Classroom(data));
+  }
+
   public async fetchOne(id: number) {
     const res = await axios.get<IClassroomData>(`classroom/${id}`);
     return new Classroom(res.data);

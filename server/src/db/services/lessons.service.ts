@@ -17,6 +17,13 @@ export class LessonsService {
       .orderBy('id');
   }
 
+  public getSemesterLessons(id: number) {
+    return this.db(lessonsTable)
+      .select('*')
+      .where('semester', id)
+      .orderBy('id');
+  }
+
   public getSingle(id: number) {
     return this.db(lessonsTable)
       .select('*')

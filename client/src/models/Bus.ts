@@ -6,6 +6,8 @@ import { DisciplineEvent } from '@/models/managers/Discipline';
 import { MarkEvent } from '@/models/managers/Mark';
 import { ModuleEvent } from '@/models/managers/Module';
 import { SemesterEvent } from '@/models/managers/Semester';
+import { LessonEvent } from './managers/Lesson';
+import { ParameterEvent } from './managers/Parameters';
 
 type BusEvent =
   | ClassroomEvent
@@ -15,7 +17,9 @@ type BusEvent =
   | DisciplineEvent
   | MarkEvent
   | ModuleEvent
-  | SemesterEvent;
+  | SemesterEvent
+  | LessonEvent
+  | ParameterEvent;
 
 type BusEventHandler = (data?: any) => void;
 
@@ -25,8 +29,8 @@ interface ListenerPair {
 }
 
 export class Bus {
-  private _listeners: Map<BusEvent, BusEventHandler[]> = new Map();
-  private _ownedHandlers: Map<object, ListenerPair[]> = new Map();
+  private listeners: Map<BusEvent, BusEventHandler[]> = new Map();
+  private ownedHandlers: Map<object, ListenerPair[]> = new Map();
 
   public on(
     events: BusEvent | BusEvent[],
@@ -36,15 +40,15 @@ export class Bus {
     events = events instanceof Array ? events : [events];
 
     events.forEach((event) => {
-      const listeners = this._listeners.get(event);
-      this._listeners.set(event, (listeners || []).concat(handler));
+      const listeners = this.listeners.get(event);
+      this.listeners.set(event, (listeners || []).concat(handler));
 
       if (!owner) {
         return;
       }
 
-      const handlers = this._ownedHandlers.get(owner);
-      this._ownedHandlers.set(
+      const handlers = this.ownedHandlers.get(owner);
+      this.ownedHandlers.set(
         owner,
         (handlers || []).concat({ event, handler })
       );
@@ -55,13 +59,13 @@ export class Bus {
     events = events instanceof Array ? events : [events];
 
     events.forEach((event) => {
-      const listeners = this._listeners.get(event);
+      const listeners = this.listeners.get(event);
 
       if (listeners == null) {
         return;
       }
 
-      this._listeners.set(event, listeners.filter((v) => v !== handler));
+      this.listeners.set(event, listeners.filter((v) => v !== handler));
     });
   }
 
@@ -69,7 +73,7 @@ export class Bus {
     events = events instanceof Array ? events : [events];
 
     events.forEach((event) => {
-      const listeners = this._listeners.get(event);
+      const listeners = this.listeners.get(event);
       if (listeners) {
         listeners.forEach((v) => v(data));
       }
@@ -77,14 +81,14 @@ export class Bus {
   }
 
   public clear(owner: object): void {
-    const handlers = this._ownedHandlers.get(owner);
+    const handlers = this.ownedHandlers.get(owner);
 
     if (handlers == null) {
       return;
     }
 
     handlers.forEach((pair) => this.off(pair.event, pair.handler));
-    this._ownedHandlers.delete(owner);
+    this.ownedHandlers.delete(owner);
   }
 }
 
