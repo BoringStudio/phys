@@ -8,12 +8,17 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  Ctx
+  Ctx,
+  Params
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { LessonsService } from '@/db/services/lessons.service';
-import { LessonCreationInfo, LessonEditionInfo } from '@/db/models/Lesson';
+import {
+  LessonCreationInfo,
+  LessonEditionInfo,
+  StudentEntryInfo
+} from '@/db/models/Lesson';
 import {
   simpleErrorHandler,
   alreadyExistsErrorHandler,
@@ -23,6 +28,15 @@ import { ParametersService } from '@/db/services/parameters.service';
 import { ParameterType } from '@/db/models/Parameter';
 import { Context } from 'koa';
 import { User } from '@/db/models/User';
+import { IsInt } from 'class-validator';
+
+class StudentEntryParameters {
+  @IsInt()
+  public id: number;
+
+  @IsInt()
+  public studentId: number;
+}
 
 @JsonController()
 export class LessonsController {
@@ -90,6 +104,29 @@ export class LessonsController {
   @Delete('/lesson/:id')
   public async remove(@Param('id') id: any) {
     await this.lessons.remove(id).catch(haveDependenciesErrorHandler);
+    return {};
+  }
+
+  @Post('/lesson/:id/student')
+  public async addStudent(
+    @Param('id') id: any,
+    @Body() data: StudentEntryInfo
+  ) {
+    await this.lessons
+      .addStudent(id, data.studentId)
+      .catch(alreadyExistsErrorHandler);
+    return {};
+  }
+
+  @Delete('/lesson/:id/student/:studentId')
+  public async removeStudent(@Params()
+  {
+    id,
+    studentId
+  }: StudentEntryParameters) {
+    await this.lessons
+      .removeStudent(id, studentId)
+      .catch(haveDependenciesErrorHandler);
     return {};
   }
 }

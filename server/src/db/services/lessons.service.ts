@@ -2,7 +2,8 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { LessonCreationInfo, LessonEditionInfo } from '../models/Lesson';
 
-const lessonsTable = 'lessons';
+export const lessonsTable = 'lessons';
+export const studentEntries = 'student_entries';
 
 export class LessonsService {
   private db: knex;
@@ -62,6 +63,22 @@ export class LessonsService {
   public remove(id: number) {
     return this.db(lessonsTable)
       .where('id', id)
+      .delete();
+  }
+
+  public addStudent(lessonId: number, studentId: number) {
+    return this.db(studentEntries)
+      .insert({
+        lesson: lessonId,
+        student: studentId
+      })
+      .returning('id');
+  }
+
+  public removeStudent(lessonId: number, studentId: number) {
+    return this.db(studentEntries)
+      .where('lesson', lessonId)
+      .andWhere('student', studentId)
       .delete();
   }
 }

@@ -14,7 +14,12 @@ import { Lesson } from '../../models/managers/Lesson';
 import { Classroom } from '../../models/managers/Classroom';
 import { Discipline } from '../../models/managers/Discipline';
 import { Semester } from '../../models/managers/Semester';
-import { getLessonNumberName, getDayName } from '../../models/Stuff';
+import {
+  getLessonNumberName,
+  getDayName,
+  insertOrUpdate,
+  deleteByIndex
+} from '../../models/Stuff';
 
 type State = 'schedule' | 'tests' | 'info';
 type StudentState = 'add' | 'edit';
@@ -34,7 +39,6 @@ export default class LogPage extends Vue {
 
   private tests: Test[] = [];
   //private modules: Module[] = [];
-  private students: Student[] = [];
 
   private state: State = 'schedule';
   private studentState: StudentState = 'edit';
@@ -44,7 +48,40 @@ export default class LogPage extends Vue {
   private discipline: Discipline | null = null;
   private semester: Semester | null = null;
 
+  private students: Student[] = [];
+
+  private created() {
+    this.$bus.on(
+      'lesson_student_added',
+      async (entry: { lessonId: number; studentId: number }) => {
+        console.log(entry, this.lesson);
+
+        if (this.lesson == null || entry.lessonId !== this.lesson.id) {
+          return;
+        }
+
+        insertOrUpdate(
+          this.students,
+          await this.$state.studentManager.fetchOne(entry.studentId)
+        );
+      }
+    );
+
+    this.$bus.on(
+      'lesson_student_removed',
+      (entry: { lessonId: number; studentId: number }) => {
+        if (this.lesson == null || entry.lessonId !== this.lesson.id) {
+          return;
+        }
+
+        deleteByIndex(this.students, entry.studentId);
+      }
+    );
+  }
+
   private async beforeMount() {
+    this.students = [];
+
     const lessonId = this.$route.params.id;
 
     try {
@@ -94,26 +131,29 @@ export default class LogPage extends Vue {
 
       week += 6;
     }
-
-    /*for (let i = 0; i < 10; ++i) {
-      const sampleStudent = new Student(
-        'Иванов',
-        'Иван',
-        'Иванович',
-        `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`,
-        HealthGroup.First
-      );
-
-      this.fillStudent(sampleStudent);
-
-      this.students.push(sampleStudent);
-    }*/
   }
 
   private mounted() {
     this.lessonStudentModal = this.$refs[
       'lesson-student-modal'
     ] as LessonStudentModal;
+    this.lessonStudentModal.$on(
+      'submit',
+      async ({ student }: { student: number }) => {
+        this.lessonStudentModal.setInProcess(true);
+
+        try {
+          await this.$state.lessonManager.addStudent(this.lesson!.id, student);
+          this.lessonStudentModal.setVisible(false);
+        } catch (e) {
+          this.$notify({
+            title: 'Невозможно добавить студента',
+            type: 'error'
+          });
+          this.lessonStudentModal.setInProcess(false);
+        }
+      }
+    );
   }
 
   private addStudent() {
@@ -124,16 +164,18 @@ export default class LogPage extends Vue {
 
   private get filteredStudents() {
     return this.students.filter((s) => {
-      /*if (this.filterString.length === 0) {
+      if (this.filterString.length === 0) {
         return true;
       }
 
       const words = this.filterString.toLowerCase().split(' ');
       return words.every(
         (w) =>
-          s.fullName.toLowerCase().includes(w) ||
-          s.group.toLowerCase().includes(w)
-      );*/
+          s.fullName
+            .toLowerCase()
+            .includes(w) /* ||
+          s.group.toLowerCase().includes(w)*/
+      );
 
       return false;
     });

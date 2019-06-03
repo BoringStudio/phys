@@ -39,7 +39,9 @@ export class Lesson implements ILessonData {
 export type LessonEvent =
   | 'lesson_created'
   | 'lesson_updated'
-  | 'lesson_removed';
+  | 'lesson_removed'
+  | 'lesson_student_added'
+  | 'lesson_student_removed';
 
 export class LessonManager {
   public async fetchAll(onlyCurrentSemester: boolean = true) {
@@ -76,5 +78,17 @@ export class LessonManager {
   public async remove(id: number) {
     await axios.delete(`lesson/${id}`);
     bus.fire('lesson_removed', id);
+  }
+
+  public async addStudent(lessonId: number, studentId: number) {
+    await axios.post(`lesson/${lessonId}/student`, {
+      studentId
+    });
+    bus.fire('lesson_student_added', { lessonId, studentId });
+  }
+
+  public async removeStudent(lessonId: number, studentId: number) {
+    await axios.delete(`lesson/${lessonId}/student/${studentId}`);
+    bus.fire('lesson_student_removed', { lessonId, studentId });
   }
 }

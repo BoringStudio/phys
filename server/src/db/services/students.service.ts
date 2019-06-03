@@ -2,7 +2,7 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { StudentCreationInfo, StudentEditionInfo } from '../models/Student';
 
-const studentsTable = 'students';
+export const studentsTable = 'students';
 
 export class StudentsService {
   private db: knex;
@@ -48,8 +48,6 @@ export class StudentsService {
     });
 
     query = query.orderBy(`${studentsTable}.id`).limit(limit);
-
-    console.log(query.toString());
 
     return query;
   }

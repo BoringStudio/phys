@@ -60,3 +60,8 @@ export class LessonEditionInfo {
   @IsIn([1, 2, 3, 4, 5, 6])
   public number: number;
 }
+
+export class StudentEntryInfo {
+  @IsInt()
+  public studentId: number;
+}
