@@ -49,6 +49,8 @@ export class StudentsService {
 
     query = query.orderBy(`${studentsTable}.id`).limit(limit);
 
+    console.log(query.toString());
+
     return query;
   }
 

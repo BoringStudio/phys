@@ -6,11 +6,15 @@ import { Component, Vue } from 'vue-property-decorator';
 import moment from 'moment-timezone';
 
 import Page from '@/components/Page.vue';
-import StudentModal from '@/components/StudentModal.vue';
+import LessonStudentModal from '@/components/LessonStudentModal.vue';
 
-import { Module, MarkType } from '@/models/Module';
 import { Student } from '@/models/managers/Student';
 import { Test } from '@/models/managers/Test';
+import { Lesson } from '../../models/managers/Lesson';
+import { Classroom } from '../../models/managers/Classroom';
+import { Discipline } from '../../models/managers/Discipline';
+import { Semester } from '../../models/managers/Semester';
+import { getLessonNumberName, getDayName } from '../../models/Stuff';
 
 type State = 'schedule' | 'tests' | 'info';
 type StudentState = 'add' | 'edit';
@@ -18,43 +22,49 @@ type StudentState = 'add' | 'edit';
 @Component({
   components: {
     Page,
-    StudentModal
+    LessonStudentModal
   }
 })
 export default class LogPage extends Vue {
-  private studentModal!: StudentModal;
+  private lessonStudentModal!: LessonStudentModal;
 
   private filterString: string = '';
 
   private moduleWeeks: Array<{ dates: Date[] }> = [];
 
   private tests: Test[] = [];
-  private modules: Module[] = [];
+  //private modules: Module[] = [];
   private students: Student[] = [];
-
-  private markOptions = [
-    { value: null, text: '' },
-    { value: MarkType.Schedule, text: 'V' },
-    { value: MarkType.OutOfSchedule, text: 'W' },
-    { value: MarkType.Skip, text: 'Н' },
-    { value: MarkType.TrustedSkip, text: 'У' },
-    { value: MarkType.Ill, text: 'Б' },
-    { value: MarkType.Retrieval, text: 'О' }
-  ];
 
   private state: State = 'schedule';
   private studentState: StudentState = 'edit';
 
-  private mounted() {
-    this.studentModal = this.$refs['student-modal'] as StudentModal;
-    this.studentModal.$on('submit', (student: Student) => {
-      if (this.studentState === 'add') {
-        this.students.push(student);
-        this.fillStudent(student);
-      }
+  private lesson: Lesson | null = null;
+  private classroom: Classroom | null = null;
+  private discipline: Discipline | null = null;
+  private semester: Semester | null = null;
 
-      this.studentModal.setVisible(false);
-    });
+  private async beforeMount() {
+    const lessonId = this.$route.params.id;
+
+    try {
+      this.lesson = await this.$state.lessonManager.fetchOne(
+        parseInt(lessonId, 10)
+      );
+
+      [this.classroom, this.discipline, this.semester] = await Promise.all([
+        this.$state.classroomManager.fetchOne(this.lesson.classroom),
+        this.$state.disciplineManager.fetchOne(this.lesson.discipline),
+        this.$state.semesterManager.fetchOne(this.lesson.semester)
+      ]);
+    } catch (e) {
+      this.$router.back();
+      this.$notify({
+        title: 'Не удалось открыть журнал',
+        type: 'error'
+      });
+      return;
+    }
 
     const septemberBegin = moment('11.02.2019', 'DD.MM.YYYY');
 
@@ -74,11 +84,11 @@ export default class LogPage extends Vue {
         );
       }
 
-      const newModule = new Module(i + 1);
-      newModule.marks = Array.apply(null, Array(j - week)).map(() => ({
-        value: null
-      }));
-      this.modules.push(newModule);
+      // const newModule = new Module(i + 1);
+      // newModule.marks = Array.apply(null, Array(j - week)).map(() => ({
+      //   value: null
+      // }));
+      //this.modules.push(newModule);
 
       this.moduleWeeks.push({ dates });
 
@@ -100,16 +110,16 @@ export default class LogPage extends Vue {
     }*/
   }
 
-  private fillStudent(student: Student) {
-    /*student.modules = this.modules.map((m) => {
-      const res = new Module(m.position);
-      res.marks = m.marks.map((v) => ({ value: v.value }));
-      return res;
-    });
+  private mounted() {
+    this.lessonStudentModal = this.$refs[
+      'lesson-student-modal'
+    ] as LessonStudentModal;
+  }
 
-    student.testMarks = Array.apply(null, Array(this.tests.length)).map(() => ({
-      value: null
-    }));*/
+  private addStudent() {
+    this.lessonStudentModal.show({
+      student: -1
+    });
   }
 
   private get filteredStudents() {
@@ -135,26 +145,19 @@ export default class LogPage extends Vue {
     };
   }
 
-  private addStudent() {
-    this.studentState = 'add';
-    this.studentModal.show(new Student());
-  }
+  private get lessonTitle() {
+    const hasTitle =
+      this.lesson != null && this.classroom != null && this.discipline != null;
 
-  private editStudent(student: Student) {
-    this.studentState = 'edit';
-    this.studentModal.show(student);
-  }
+    if (!hasTitle) {
+      return '';
+    }
 
-  private getLessonInstanceTitle() {
-    /*return `${
-      this.$state.currentInstance.lesson
-        ? this.$state.currentInstance.lesson.name
-        : ''
-    } ${this.$state.currentInstance.place}, ${
-      this.$state.currentInstance.type
-    }`;*/
-
-    return '';
+    return hasTitle
+      ? `${getDayName(this.lesson!.day)}, ${getLessonNumberName(
+          this.lesson!.number
+        )}, ${this.classroom!.name}, ${this.discipline!.name}`
+      : '';
   }
 }
 </script>

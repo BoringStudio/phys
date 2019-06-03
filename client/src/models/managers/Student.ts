@@ -43,11 +43,38 @@ export class Student implements IStudentData {
 }
 
 export type StudentEvent =
+  | 'students_total_changed'
   | 'student_created'
   | 'student_updated'
   | 'student_removed';
 
 export class StudentManager {
+  public total: number = 0;
+
+  public async fetchTotalCount() {
+    const res = await axios.get<number>(`students/total`);
+    this.total = res.data;
+
+    bus.fire('students_total_changed', this.total);
+    return this.total;
+  }
+
+  public async fetchPage(perPage: number, page: number) {
+    const res = await axios.get<IStudentData[]>(
+      `students?perPage=${perPage}&page=${page}`
+    );
+
+    return res.data.map((data) => new Student(data));
+  }
+
+  public async search(value: string, limit: number = 10) {
+    const res = await axios.get<IStudentData[]>(
+      `students/search?match=${encodeURIComponent(value)}&limit=${limit}`
+    );
+
+    return res.data.map((data) => new Student(data));
+  }
+
   public async fetchAll() {
     const res = await axios.get<IStudentData[]>('students');
     return res.data.map((data) => new Student(data));

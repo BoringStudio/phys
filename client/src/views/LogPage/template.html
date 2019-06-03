@@ -1,4 +1,4 @@
-<page :title="getLessonInstanceTitle()" wide class="log-page">
+<page :title="lessonTitle" wide class="log-page">
   <div class="title noselect">
     <b-row class="m-0">
       <b-col class="p-1">
@@ -102,5 +102,5 @@
     </div>
   </div>
 
-  <student-modal ref="student-modal"/>
+  <lesson-student-modal ref="lesson-student-modal"></lesson-student-modal>
 </page>

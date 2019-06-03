@@ -81,7 +81,10 @@ export default class TimeTablePage extends Vue {
 
   private openLog(lesson: Lesson) {
     this.$router.push({
-      name: 'log'
+      name: 'log',
+      params: {
+        id: lesson.id.toString()
+      }
     });
   }
 
