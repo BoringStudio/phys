@@ -22,7 +22,11 @@
           >
             Нормативы
           </div>
-          <div class="tab" :class="getTabClass('info')" @click="state = 'info'">
+          <div
+            class="tab"
+            :class="getTabClass('infos')"
+            @click="state = 'infos'"
+          >
             Инфо
           </div>
         </div>
@@ -93,7 +97,9 @@
               <div
                 class="item module"
                 :key="`marks-module-${studentIndex}-${moduleIndex}`"
-              >{{ getModuleSumm(module) }}</div>
+              >
+                {{ getModuleSumm(module) }}
+              </div>
             </template>
             <div class="item module">{{ getStudentSumm(student) }}</div>
           </div>
@@ -133,8 +139,114 @@
         </div>
       </div>-->
       <!-- END TESTS TABLE -->
+
+      <!-- BEGIN INFOS TABLE -->
+      <div class="infos-table" v-else-if="state === 'infos'">
+        <div class="title">
+          <div class="item wider">Группа здоровья</div>
+          <div class="item wider">Дата получения справки</div>
+          <div class="item wide">Дневник</div>
+          <div class="item wider">Соревнования</div>
+          <div class="item wider">Личностные качества</div>
+          <div class="item wider">Дата зачёта</div>
+        </div>
+        <div class="rows-container">
+          <div
+            class="items-row"
+            v-for="(student, studentIndex) in filteredStudents"
+            :key="`student-row-${studentIndex}`"
+          >
+            <template v-for="info in [getStudentInfo(student)]">
+              <div class="item wider">
+                <b-form-select
+                  v-model="info.healthGroup"
+                  @input="() => updateInfo(info, false, 'healthGroup')"
+                >
+                  <option :value="1">Первая</option>
+                  <option :value="2">Вторая</option>
+                  <option :value="3">Третья</option>
+                </b-form-select>
+              </div>
+              <div class="item wider button" @click="editReceiptDate(info)">
+                {{ (info.receiptDate && formatDate(info.receiptDate)) || '' }}
+              </div>
+              <div class="item wide">
+                <b-form-input
+                  type="number"
+                  v-model.number="info.diary"
+                  @input="() => updateInfo(info, false, 'diary')"
+                ></b-form-input>
+              </div>
+              <div class="item wider">
+                <b-form-input
+                  type="number"
+                  v-model.number="info.competitions"
+                  @input="() => updateInfo(info, false, 'competitions')"
+                ></b-form-input>
+              </div>
+              <div class="item wider">
+                <b-form-input
+                  type="number"
+                  v-model.number="info.personalQualities"
+                  @input="() => updateInfo(info, false, 'personalQualities')"
+                ></b-form-input>
+              </div>
+              <div class="item wider button" @click="editExamDate(info)">
+                {{ (info.examDate && formatDate(info.examDate)) || '' }}
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+      <!-- END INFOS TABLE -->
     </div>
   </div>
 
   <lesson-student-modal ref="lesson-student-modal"></lesson-student-modal>
+
+  <general-modal
+    ref="receipt-date-modal"
+    title="Дата получения справки"
+    @submit="updateInfo"
+  >
+    <template v-slot="{ data }">
+      <b-form-row>
+        <b-col cols="9">
+          <datepicker
+            v-model="data.receiptDate"
+            :language="locale"
+            :format="format"
+            bootstrap-styling
+            monday-first
+          ></datepicker>
+        </b-col>
+        <b-col cols="3">
+          <b-button @click="data.receiptDate = null" class="w-100"
+            >Очистить</b-button
+          >
+        </b-col>
+      </b-form-row>
+    </template>
+  </general-modal>
+
+  <general-modal ref="exam-date-modal" title="Дата зачёта" @submit="updateInfo">
+    <template v-slot="{ data }">
+      <b-form-row>
+        <b-col cols="9">
+          <datepicker
+            v-model="data.examDate"
+            :language="locale"
+            :format="format"
+            bootstrap-styling
+            monday-first
+          ></datepicker>
+        </b-col>
+        <b-col cols="3">
+          <b-button @click="data.examDate = null" class="w-100"
+            >Очистить</b-button
+          >
+        </b-col>
+      </b-form-row>
+    </template>
+  </general-modal>
 </page>

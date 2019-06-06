@@ -2,11 +2,14 @@
 <style lang="scss" src="./style.scss"></style>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Mixins } from 'vue-property-decorator';
 import moment from 'moment-timezone';
+import _ from 'underscore';
 
 import Page from '@/components/Page.vue';
+import GeneralModal from '@/components/GeneralModal.vue';
 import LessonStudentModal from '@/components/LessonStudentModal.vue';
+import HasDatepickerMixin from '@/components/HasDatepickerMixin.vue';
 
 import { Student } from '@/models/managers/Student';
 import { Test } from '@/models/managers/Test';
@@ -18,6 +21,7 @@ import { Group } from '@/models/managers/Group';
 import { Module } from '@/models/managers/Module';
 import { Mark } from '@/models/managers/Mark';
 import { StudentVisit } from '@/models/managers/StudentVisit';
+import { StudentInfo } from '@/models/managers/StudentInfo';
 
 import {
   getLessonNumberName,
@@ -28,21 +32,26 @@ import {
   findIndexById
 } from '@/models/Stuff';
 
-type State = 'schedule' | 'tests' | 'info';
+type State = 'schedule' | 'tests' | 'infos';
 
 interface ModuleWeek {
   number: number;
   date: Date;
 }
 
+type StudentVisitOptional = StudentVisit | null;
+
 @Component({
   components: {
     Page,
+    GeneralModal,
     LessonStudentModal
   }
 })
-export default class LogPage extends Vue {
+export default class LogPage extends Mixins(HasDatepickerMixin) {
   private lessonStudentModal!: LessonStudentModal;
+  private receiptDateModal!: GeneralModal;
+  private examDateModal!: GeneralModal;
 
   private filterString: string = '';
 
@@ -60,10 +69,15 @@ export default class LogPage extends Vue {
   private marks: Mark[] = [];
 
   private studentVisits: StudentVisit[] = [];
+  private studentInfos: StudentInfo[] = [];
 
   private moduleWeeks: ModuleWeek[][] = [];
   private weekToModule: Map<number, number> = new Map();
-  private moduleVisits: Array<StudentVisit | null>[][] = [];
+  private moduleVisits: StudentVisitOptional[][][] = [];
+
+  private apiThrottler = _.throttle((cb: () => any) => cb(), 500, {
+    leading: false
+  });
 
   private created() {
     this.$bus.on(
@@ -111,17 +125,28 @@ export default class LogPage extends Vue {
     this.$bus.on(
       ['student_visit_created', 'student_visit_removed'],
       async () => {
-        this.studentVisits = await this.$state.studentVisitManager.fetchLessonVisits(
+        this.studentVisits = await this.$state.lessonManager.fetchVisits(
           this.lesson.id
         );
       }
     );
+
+    this.$bus.on(
+      ['student_info_updated', 'student_info_created'],
+      (info: StudentInfo) => {
+        insertOrUpdate(this.studentInfos, info);
+      }
+    );
+
+    this.$bus.on('student_info_removed', async (id) => {
+      deleteByIndex(this.studentInfos, id);
+    });
   }
 
   private async beforeMount() {
     this.reset();
 
-    const lessonId = parseInt(this.$route.params.id) || 0;
+    const lessonId = parseInt(this.$route.params.id, 10) || 0;
 
     try {
       const [info, marks] = await Promise.all([
@@ -139,12 +164,17 @@ export default class LogPage extends Vue {
       this.lesson = info.lesson;
 
       this.marks = marks;
-      this.studentVisits = await this.$state.studentVisitManager.fetchLessonVisits(
+
+      this.studentVisits = await this.$state.lessonManager.fetchVisits(
         this.lesson.id
       );
 
       this.fillWeeks();
       this.fillStudentVisits();
+
+      this.studentInfos = await this.$state.lessonManager.fetchInfos(
+        this.lesson.id
+      );
     } catch (e) {
       this.$router.back();
       this.$notify({
@@ -176,6 +206,9 @@ export default class LogPage extends Vue {
         }
       }
     );
+
+    this.receiptDateModal = this.$refs['receipt-date-modal'] as GeneralModal;
+    this.examDateModal = this.$refs['exam-date-modal'] as GeneralModal;
   }
 
   private addStudent() {
@@ -223,6 +256,7 @@ export default class LogPage extends Vue {
 
     this.marks = [];
     this.studentVisits = [];
+    this.studentInfos = [];
 
     this.moduleWeeks = [];
     this.moduleVisits = [];
@@ -237,12 +271,12 @@ export default class LogPage extends Vue {
     let w = 0;
     for (let m = 0; m < this.modules.length; ++m) {
       // Offset weeks which are not in range
-      for (
-        ;
+      while (
         w < weeks.length &&
-        (weeks[w] < this.modules[m].begin || weeks[w] > this.modules[m].end);
-        ++w
-      );
+        (weeks[w] < this.modules[m].begin || weeks[w] > this.modules[m].end)
+      ) {
+        ++w;
+      }
 
       // Add weeks which are in range
       for (
@@ -266,7 +300,7 @@ export default class LogPage extends Vue {
 
     // Fill student visits
     this.moduleVisits = this.students.map((student) => {
-      const moduleVisits: (StudentVisit | null)[][] = this.moduleWeeks.map(
+      const moduleVisits: StudentVisitOptional[][] = this.moduleWeeks.map(
         (weeks) => weeks.map(() => null)
       );
 
@@ -304,6 +338,23 @@ export default class LogPage extends Vue {
     }
 
     return this.moduleVisits[studentIndex];
+  }
+
+  private getStudentInfo(student: Student) {
+    const infoIndex = this.studentInfos.findIndex(
+      (info) => info.student === student.id
+    );
+
+    if (infoIndex < 0) {
+      const info = new StudentInfo({
+        student: student.id,
+        semester: this.semester.id
+      });
+      this.studentInfos.push(info);
+      return info;
+    }
+
+    return this.studentInfos[infoIndex];
   }
 
   private async onMarkChanged(
@@ -391,6 +442,68 @@ export default class LogPage extends Vue {
   private getStudentSumm(student: Student) {
     const studentVisits = this.getStudentVisits(student);
     return studentVisits.reduce((sum, m) => sum + this.getModuleSumm(m), 0);
+  }
+
+  private editReceiptDate(info: StudentInfo) {
+    this.receiptDateModal.show(info);
+  }
+
+  private editExamDate(info: StudentInfo) {
+    this.examDateModal.show(info);
+  }
+
+  private formatDate(date: Date) {
+    return moment(date).format('DD.MM.YYYY');
+  }
+
+  private async updateInfo(
+    info: StudentInfo,
+    fromModal: boolean = true,
+    property?: keyof Pick<
+      StudentInfo,
+      Exclude<keyof StudentInfo, 'id' | 'summ'>
+    >
+  ) {
+    this.apiThrottler(async () => {
+      console.log('temp');
+
+      if (fromModal) {
+        this.receiptDateModal.setInProcess(true);
+        this.examDateModal.setInProcess(true);
+      }
+
+      const infoIndex = this.studentInfos.findIndex(
+        (i) => i.student === info.student
+      );
+
+      const create = info.id < 0;
+
+      try {
+        let res: StudentInfo;
+        if (create) {
+          res = await this.$state.studentInfoManager.create(info);
+        } else {
+          res = await this.$state.studentInfoManager.update(info, property);
+        }
+
+        Vue.set(this.studentInfos, infoIndex, res);
+
+        if (fromModal) {
+          this.receiptDateModal.setVisible(false);
+          this.examDateModal.setVisible(false);
+        }
+      } catch (e) {
+        this.$notify({
+          title: 'Невозможно изменить информацию о студенте',
+          type: 'error'
+        });
+
+        if (fromModal) {
+          this.receiptDateModal.setInProcess(false);
+          this.examDateModal.setInProcess(false);
+        }
+      }
+    });
   }
 
   private get lessonDates() {

@@ -5,7 +5,7 @@ import { studentsTable } from './students.service';
 import { groupsTable } from './groups.service';
 
 export const lessonsTable = 'lessons';
-export const studentEntries = 'student_entries';
+export const studentEntriesTable = 'student_entries';
 
 export class LessonsService {
   private db: knex;
@@ -40,11 +40,11 @@ export class LessonsService {
     const db = this.db;
 
     return this.db(studentsTable)
+      .distinct()
       .select(`${studentsTable}.*`)
-      .join(studentEntries, function() {
-        this.on(`${studentsTable}.id`, '=', `${studentEntries}.student`).andOn(
-          `${studentEntries}.lesson`,
-          '=',
+      .join(studentEntriesTable, function() {
+        this.on(`${studentsTable}.id`, `${studentEntriesTable}.student`).andOn(
+          `${studentEntriesTable}.lesson`,
           db.raw('?', [id])
         );
       });
@@ -57,12 +57,11 @@ export class LessonsService {
       .distinct()
       .select(`${groupsTable}.*`)
       .join(studentsTable, function() {
-        this.on(`${groupsTable}.id`, '=', `${studentsTable}.group`);
+        this.on(`${groupsTable}.id`, `${studentsTable}.group`);
       })
-      .join(studentEntries, function() {
-        this.on(`${studentsTable}.id`, '=', `${studentEntries}.student`).andOn(
-          `${studentEntries}.lesson`,
-          '=',
+      .join(studentEntriesTable, function() {
+        this.on(`${studentsTable}.id`, `${studentEntriesTable}.student`).andOn(
+          `${studentEntriesTable}.lesson`,
           db.raw('?', [id])
         );
       });
@@ -101,7 +100,7 @@ export class LessonsService {
   }
 
   public getEntry(lessonId: number, studentId: number) {
-    return this.db(studentEntries)
+    return this.db(studentEntriesTable)
       .select('id')
       .where({
         lesson: lessonId,
@@ -111,7 +110,7 @@ export class LessonsService {
   }
 
   public addStudent(lessonId: number, studentId: number) {
-    return this.db(studentEntries)
+    return this.db(studentEntriesTable)
       .insert({
         lesson: lessonId,
         student: studentId
@@ -120,7 +119,7 @@ export class LessonsService {
   }
 
   public removeStudent(lessonId: number, studentId: number) {
-    return this.db(studentEntries)
+    return this.db(studentEntriesTable)
       .where('lesson', lessonId)
       .andWhere('student', studentId)
       .delete();

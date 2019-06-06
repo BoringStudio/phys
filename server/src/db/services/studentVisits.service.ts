@@ -4,7 +4,7 @@ import {
   StudentVisitCreationInfo,
   StudentVisitEditionInfo
 } from '../models/StudentVisit';
-import { studentEntries } from './lessons.service';
+import { studentEntriesTable } from './lessons.service';
 
 const studentVisitsTable = 'student_visits';
 
@@ -34,18 +34,18 @@ export class StudentVisitsService {
     const db = this.db;
 
     return this.db(studentVisitsTable)
+      .distinct()
       .select(
         `${studentVisitsTable}.id`,
         `${studentVisitsTable}.mark`,
         `${studentVisitsTable}.week`,
-        `${studentEntries}.lesson as lesson`,
-        `${studentEntries}.student as student`
+        `${studentEntriesTable}.lesson as lesson`,
+        `${studentEntriesTable}.student as student`
       )
-      .join(studentEntries, function() {
-        this.on(`${studentEntries}.lesson`, '=', db.raw('?', [lessonId])).andOn(
+      .join(studentEntriesTable, function() {
+        this.on(`${studentEntriesTable}.lesson`, db.raw('?', [lessonId])).andOn(
           `${studentVisitsTable}.entry`,
-          '=',
-          `${studentEntries}.id`
+          `${studentEntriesTable}.id`
         );
       })
       .orderBy('week', 'asc');
@@ -59,13 +59,13 @@ export class StudentVisitsService {
         `${studentVisitsTable}.id`,
         `${studentVisitsTable}.mark`,
         `${studentVisitsTable}.week`,
-        `${studentEntries}.lesson as lesson`,
-        `${studentEntries}.student as student`
+        `${studentEntriesTable}.lesson as lesson`,
+        `${studentEntriesTable}.student as student`
       )
-      .join(studentEntries, function() {
-        this.on(`${studentEntries}.lesson`, '=', db.raw('?', [lessonId]))
-          .andOn(`${studentEntries}.student`, '=', db.raw('?', [studentId]))
-          .andOn(`${studentVisitsTable}.entry`, '=', `${studentEntries}.id`);
+      .join(studentEntriesTable, function() {
+        this.on(`${studentEntriesTable}.lesson`, db.raw('?', [lessonId]))
+          .andOn(`${studentEntriesTable}.student`, db.raw('?', [studentId]))
+          .andOn(`${studentVisitsTable}.entry`, `${studentEntriesTable}.id`);
       })
       .orderBy('week', 'asc');
   }

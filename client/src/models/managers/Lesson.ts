@@ -7,6 +7,8 @@ import { IClassroomData, Classroom } from './Classroom';
 import { IDisciplineData, Discipline } from './Discipline';
 import { ISemesterData, Semester } from './Semester';
 import { IModuleData, Module } from './Module';
+import { IStudentInfoData, StudentInfo } from './StudentInfo';
+import { IStudentVisitData, StudentVisit } from './StudentVisit';
 
 export interface ILessonData {
   id: number;
@@ -106,6 +108,20 @@ export class LessonManager {
   public async fetchGroups(id: number) {
     const res = await axios.get<IGroupData[]>(`lesson/${id}/groups`);
     return res.data.map((data) => new Group(data));
+  }
+
+  public async fetchVisits(lessonId: number) {
+    const res = await axios.get<IStudentVisitData[]>(
+      `lesson/${lessonId}/student_visits`
+    );
+    return res.data.map((data) => new StudentVisit(data));
+  }
+
+  public async fetchInfos(lessonId: number) {
+    const res = await axios.get<IStudentInfoData[]>(
+      `lesson/${lessonId}/student_infos`
+    );
+    return res.data.map((data) => new StudentInfo(data));
   }
 
   public async create(data: Omit<ILessonData, 'id'>) {

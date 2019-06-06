@@ -36,13 +36,6 @@ export type StudentVisitEvent =
   | 'student_visit_removed';
 
 export class StudentVisitManager {
-  public async fetchLessonVisits(lessonId: number) {
-    const res = await axios.get<IStudentVisitData[]>(
-      `student_visits/lesson/${lessonId}`
-    );
-    return res.data.map((data) => new StudentVisit(data));
-  }
-
   public async fetchStudentLessonVisits(lessonId: number, studentId: number) {
     const res = await axios.get<IStudentVisitData[]>(
       `student_visits/lesson/${lessonId}/student/${studentId}`

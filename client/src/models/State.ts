@@ -17,6 +17,7 @@ import { SemesterManager } from './managers/Semester';
 import { LessonManager } from './managers/Lesson';
 import { ParameterManager } from './managers/Parameters';
 import { StudentVisitManager } from './managers/StudentVisit';
+import { StudentInfoManager } from './managers/StudentInfo';
 
 export class State {
   public userManager: UserManager = new UserManager();
@@ -31,6 +32,7 @@ export class State {
   public lessonManager: LessonManager = new LessonManager();
   public parameterManager: ParameterManager = new ParameterManager();
   public studentVisitManager: StudentVisitManager = new StudentVisitManager();
+  public studentInfoManager: StudentInfoManager = new StudentInfoManager();
 }
 
 const state = new State();

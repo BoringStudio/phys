@@ -8,12 +8,14 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  QueryParams
+  QueryParams,
+  Params
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { StudentsService } from '@/db/services/students.service';
 import { StudentCreationInfo, StudentEditionInfo } from '@/db/models/Student';
+import { StudentInfosService } from '@/db/services/studentInfos.service';
 import {
   simpleErrorHandler,
   alreadyExistsErrorHandler,
@@ -21,10 +23,20 @@ import {
 } from '../errors';
 
 import { PaginationQueryParams, SearchParams } from '@/pagination';
+import { IsInt } from 'class-validator';
+
+class StudentInfoParameters {
+  @IsInt()
+  public id: number;
+
+  @IsInt()
+  public semesterId: number;
+}
 
 @JsonController()
 export class StudentsController {
   private students: StudentsService = injector.get(StudentsService);
+  private studentInfos: StudentInfosService = injector.get(StudentInfosService);
 
   @Get('/students')
   public async getAll(@QueryParams() { page, perPage }: PaginationQueryParams) {
@@ -64,6 +76,14 @@ export class StudentsController {
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
     return await this.students.getSingle(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/student/:id/info/semester/:semesterId')
+  @OnUndefined(NotFoundError)
+  public async getSemesterStudentInfo(@Params() params: StudentInfoParameters) {
+    return await this.studentInfos
+      .getStudentInfo(params.id, params.semesterId)
+      .catch(simpleErrorHandler);
   }
 
   @Post('/student')

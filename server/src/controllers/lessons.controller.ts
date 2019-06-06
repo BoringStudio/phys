@@ -33,6 +33,8 @@ import { IsInt } from 'class-validator';
 import { ClassroomsService } from '@/db/services/classrooms.service';
 import { DisciplinesService } from '@/db/services/disciplines.service';
 import { SemestersService } from '@/db/services/semesters.service';
+import { StudentInfosService } from '@/db/services/studentInfos.service';
+import { StudentVisitsService } from '@/db/services/studentVisits.service';
 
 class StudentEntryParameters {
   @IsInt()
@@ -49,6 +51,10 @@ export class LessonsController {
   private classrooms: ClassroomsService = injector.get(ClassroomsService);
   private parameters: ParametersService = injector.get(ParametersService);
   private disciplines: DisciplinesService = injector.get(DisciplinesService);
+  private studentInfos: StudentInfosService = injector.get(StudentInfosService);
+  private studentVisits: StudentVisitsService = injector.get(
+    StudentVisitsService
+  );
 
   @Get('/lessons')
   public async getAll() {
@@ -117,6 +123,19 @@ export class LessonsController {
   @OnUndefined(NotFoundError)
   public async getStudents(@Param('id') id: any) {
     return await this.lessons.getStudents(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/lesson/:id/student_infos')
+  @OnUndefined(NotFoundError)
+  public async getStudentInfos(@Param('id') id: any) {
+    return await this.studentInfos.getLessonInfos(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/lesson/:id/student_visits')
+  public async getStudentVisits(@Param('id') id: any) {
+    return await this.studentVisits
+      .getLessonVisits(id)
+      .catch(simpleErrorHandler);
   }
 
   @Get('/lesson/:id/groups')

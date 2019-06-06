@@ -1,8 +1,8 @@
 import {
   Validator,
   ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationArguments
+  ValidationArguments,
+  ValidatorConstraintInterface
 } from 'class-validator';
 
 const validator = new Validator();
@@ -64,5 +64,12 @@ export class IsParameterValueType implements ValidatorConstraintInterface {
       validator.isDateString(propertyValue) ||
       validator.isString(propertyValue)
     );
+  }
+}
+
+@ValidatorConstraint({ name: 'nullableDateString', async: false })
+export class NullableDateString implements ValidatorConstraintInterface {
+  public validate(propertyValue: any) {
+    return validator.isDateString(propertyValue) || propertyValue === null;
   }
 }
