@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, IsOptional } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
 
 export class StudentVisit {
   public id: number;
@@ -9,8 +9,8 @@ export class StudentVisit {
 }
 
 export class StudentVisitCreationInfo {
-  @IsDateString()
-  public date: Date;
+  @IsInt()
+  public week: number;
 
   @IsInt()
   public lesson: number;
@@ -26,19 +26,6 @@ export class StudentVisitEditionInfo {
   @IsInt()
   public id: number;
 
-  @IsOptional()
-  @IsDateString()
-  public date: Date;
-
-  @IsOptional()
-  @IsInt()
-  public lesson: number;
-
-  @IsOptional()
   @IsInt()
   public mark: number;
-
-  @IsOptional()
-  @IsInt()
-  public student: number;
 }

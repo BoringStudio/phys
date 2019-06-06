@@ -1,6 +1,8 @@
 import knex from 'knex';
 import { Connection } from '../connection';
 import { LessonCreationInfo, LessonEditionInfo } from '../models/Lesson';
+import { studentsTable } from './students.service';
+import { groupsTable } from './groups.service';
 
 export const lessonsTable = 'lessons';
 export const studentEntries = 'student_entries';
@@ -34,6 +36,38 @@ export class LessonsService {
       .first();
   }
 
+  public getStudents(id: number) {
+    const db = this.db;
+
+    return this.db(studentsTable)
+      .select(`${studentsTable}.*`)
+      .join(studentEntries, function() {
+        this.on(`${studentsTable}.id`, '=', `${studentEntries}.student`).andOn(
+          `${studentEntries}.lesson`,
+          '=',
+          db.raw('?', [id])
+        );
+      });
+  }
+
+  public getGroups(id: number) {
+    const db = this.db;
+
+    return this.db(groupsTable)
+      .distinct()
+      .select(`${groupsTable}.*`)
+      .join(studentsTable, function() {
+        this.on(`${groupsTable}.id`, '=', `${studentsTable}.group`);
+      })
+      .join(studentEntries, function() {
+        this.on(`${studentsTable}.id`, '=', `${studentEntries}.student`).andOn(
+          `${studentEntries}.lesson`,
+          '=',
+          db.raw('?', [id])
+        );
+      });
+  }
+
   public create(data: LessonCreationInfo) {
     return this.db(lessonsTable)
       .insert({
@@ -64,6 +98,16 @@ export class LessonsService {
     return this.db(lessonsTable)
       .where('id', id)
       .delete();
+  }
+
+  public getEntry(lessonId: number, studentId: number) {
+    return this.db(studentEntries)
+      .select('id')
+      .where({
+        lesson: lessonId,
+        student: studentId
+      })
+      .first();
   }
 
   public addStudent(lessonId: number, studentId: number) {

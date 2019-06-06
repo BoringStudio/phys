@@ -23,8 +23,8 @@ export class Semester implements ISemesterData {
     }
 
     this.id = data.id;
-    this.begin = data.begin;
-    this.end = data.end;
+    this.begin = moment(data.begin).toDate();
+    this.end = moment(data.end).toDate();
   }
 
   public get rangeName() {

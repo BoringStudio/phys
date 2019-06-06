@@ -17,7 +17,8 @@ import { LessonsService } from '@/db/services/lessons.service';
 import {
   LessonCreationInfo,
   LessonEditionInfo,
-  StudentEntryInfo
+  StudentEntryInfo,
+  Lesson
 } from '@/db/models/Lesson';
 import {
   simpleErrorHandler,
@@ -29,6 +30,9 @@ import { ParameterType } from '@/db/models/Parameter';
 import { Context } from 'koa';
 import { User } from '@/db/models/User';
 import { IsInt } from 'class-validator';
+import { ClassroomsService } from '@/db/services/classrooms.service';
+import { DisciplinesService } from '@/db/services/disciplines.service';
+import { SemestersService } from '@/db/services/semesters.service';
 
 class StudentEntryParameters {
   @IsInt()
@@ -41,7 +45,10 @@ class StudentEntryParameters {
 @JsonController()
 export class LessonsController {
   private lessons: LessonsService = injector.get(LessonsService);
+  private semesters: SemestersService = injector.get(SemestersService);
+  private classrooms: ClassroomsService = injector.get(ClassroomsService);
   private parameters: ParametersService = injector.get(ParametersService);
+  private disciplines: DisciplinesService = injector.get(DisciplinesService);
 
   @Get('/lessons')
   public async getAll() {
@@ -69,6 +76,53 @@ export class LessonsController {
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
     return await this.lessons.getSingle(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/lesson/:id/full_info')
+  @OnUndefined(NotFoundError)
+  public async getFullInfo(@Param('id') id: any) {
+    const lesson: Lesson = await this.lessons.getSingle(id);
+    if (lesson == null) {
+      return;
+    }
+
+    const [
+      classroom,
+      discipline,
+      semester,
+      students,
+      groups
+    ] = await Promise.all([
+      this.classrooms.getSingle(lesson.classroom),
+      this.disciplines.getSingle(lesson.discipline),
+      this.semesters.getSingle(lesson.semester),
+      this.lessons.getStudents(id),
+      this.lessons.getGroups(id)
+    ]);
+
+    const modules = await this.semesters.getModules(semester.id);
+
+    return {
+      lesson,
+      classroom,
+      discipline,
+      semester,
+      modules,
+      students,
+      groups
+    };
+  }
+
+  @Get('/lesson/:id/students')
+  @OnUndefined(NotFoundError)
+  public async getStudents(@Param('id') id: any) {
+    return await this.lessons.getStudents(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/lesson/:id/groups')
+  @OnUndefined(NotFoundError)
+  public async getGroups(@Param('id') id: any) {
+    return await this.lessons.getGroups(id).catch(simpleErrorHandler);
   }
 
   @Post('/lesson')

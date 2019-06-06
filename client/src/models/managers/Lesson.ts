@@ -1,6 +1,12 @@
 import axios from 'axios';
 import bus from '@/models/Bus';
 import { Omit, DayNumber, LessonNumber } from '@/models/Stuff';
+import { IStudentData, Student } from './Student';
+import { IGroupData, Group } from './Group';
+import { IClassroomData, Classroom } from './Classroom';
+import { IDisciplineData, Discipline } from './Discipline';
+import { ISemesterData, Semester } from './Semester';
+import { IModuleData, Module } from './Module';
 
 export interface ILessonData {
   id: number;
@@ -36,12 +42,44 @@ export class Lesson implements ILessonData {
   }
 }
 
+export interface ILessonFullInfoData {
+  lesson: ILessonData;
+  classroom: IClassroomData;
+  discipline: IDisciplineData;
+  semester: ISemesterData;
+  modules: IModuleData[];
+  students: IStudentData[];
+  groups: IGroupData[];
+}
+
+export class LessonFullInfo implements ILessonFullInfoData {
+  public lesson: Lesson;
+  public classroom: Classroom;
+  public discipline: Discipline;
+  public semester: Semester;
+  public modules: Module[];
+  public students: Student[];
+  public groups: Group[];
+
+  constructor(data?: ILessonFullInfoData) {
+    this.lesson = new Lesson(data && data.lesson);
+    this.classroom = new Classroom(data && data.classroom);
+    this.discipline = new Discipline(data && data.discipline);
+    this.semester = new Semester(data && data.semester);
+    this.modules = (data && data.modules.map((data) => new Module(data))) || [];
+    this.students =
+      (data && data.students.map((data) => new Student(data))) || [];
+    this.groups = (data && data.groups.map((data) => new Group(data))) || [];
+  }
+}
+
 export type LessonEvent =
   | 'lesson_created'
   | 'lesson_updated'
   | 'lesson_removed'
   | 'lesson_student_added'
-  | 'lesson_student_removed';
+  | 'lesson_student_removed'
+  | 'lesson_student_visit_changed';
 
 export class LessonManager {
   public async fetchAll(onlyCurrentSemester: boolean = true) {
@@ -54,6 +92,21 @@ export class LessonManager {
   public async fetchOne(id: number) {
     const res = await axios.get<ILessonData>(`lesson/${id}`);
     return new Lesson(res.data);
+  }
+
+  public async fetchFullInfo(id: number) {
+    const res = await axios.get<ILessonFullInfoData>(`lesson/${id}/full_info`);
+    return new LessonFullInfo(res.data);
+  }
+
+  public async fetchStudents(id: number) {
+    const res = await axios.get<IStudentData[]>(`lesson/${id}/students`);
+    return res.data.map((data) => new Student(data));
+  }
+
+  public async fetchGroups(id: number) {
+    const res = await axios.get<IGroupData[]>(`lesson/${id}/groups`);
+    return res.data.map((data) => new Group(data));
   }
 
   public async create(data: Omit<ILessonData, 'id'>) {

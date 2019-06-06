@@ -8,6 +8,7 @@ import { ModuleEvent } from '@/models/managers/Module';
 import { SemesterEvent } from '@/models/managers/Semester';
 import { LessonEvent } from './managers/Lesson';
 import { ParameterEvent } from './managers/Parameters';
+import { StudentVisitEvent } from './managers/StudentVisit';
 
 type BusEvent =
   | ClassroomEvent
@@ -19,7 +20,8 @@ type BusEvent =
   | ModuleEvent
   | SemesterEvent
   | LessonEvent
-  | ParameterEvent;
+  | ParameterEvent
+  | StudentVisitEvent;
 
 type BusEventHandler = (data?: any) => void;
 

@@ -1,4 +1,6 @@
 import axios from 'axios';
+import moment from 'moment-timezone';
+
 import bus from '../Bus';
 import { Omit } from '../Stuff';
 
@@ -23,8 +25,8 @@ export class Module {
     }
 
     this.id = data.id;
-    this.begin = data.begin;
-    this.end = data.end;
+    this.begin = moment(data.begin).toDate();
+    this.end = moment(data.end).toDate();
     this.isActive = data.isActive;
     this.semester = data.semester;
   }

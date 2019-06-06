@@ -16,7 +16,8 @@ import { SemestersService } from '@/db/services/semesters.service';
 import {
   SemesterWithModulesCreationInfo,
   SemesterWithModulesEditionInfo,
-  checkAllInRange
+  checkAllInRange,
+  normalizeDates
 } from '@/db/models/Semester';
 import { ModulesService } from '@/db/services/modules.service';
 import { simpleErrorHandler, haveDependenciesErrorHandler } from '@/errors';
@@ -49,6 +50,9 @@ export class SemestersController {
       throw new BadRequestError();
     }
 
+    normalizeDates(data);
+    data.modules.forEach((m) => normalizeDates(m));
+
     const [id] = await this.semesters.create(data);
 
     const moduleIds = (await Promise.all(
@@ -70,6 +74,9 @@ export class SemestersController {
       if (!checkAllInRange(data, data.modules)) {
         return; // TODO: throw smth like DateRangeError
       }
+
+      normalizeDates(data);
+      data.modules.forEach((m) => normalizeDates(m));
 
       await this.semesters.update(data);
 

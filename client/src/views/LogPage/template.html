@@ -2,45 +2,67 @@
   <div class="title noselect">
     <b-row class="m-0">
       <b-col class="p-1">
-        <b-button variant="success" class="w-100 h-100" @click="addStudent">Добавить студента</b-button>
+        <b-button variant="success" class="w-100 h-100" @click="addStudent">
+          Добавить студента
+        </b-button>
       </b-col>
       <b-col class="p-0">
         <div class="tabs">
-          <div class="tab" :class="getTabClass('schedule')" @click="state = 'schedule'">Расписание</div>
-          <div class="tab" :class="getTabClass('tests')" @click="state = 'tests'">Нормативы</div>
-          <div class="tab" :class="getTabClass('info')" @click="state = 'info'">Инфо</div>
+          <div
+            class="tab"
+            :class="getTabClass('schedule')"
+            @click="state = 'schedule'"
+          >
+            Расписание
+          </div>
+          <div
+            class="tab"
+            :class="getTabClass('tests')"
+            @click="state = 'tests'"
+          >
+            Нормативы
+          </div>
+          <div class="tab" :class="getTabClass('info')" @click="state = 'info'">
+            Инфо
+          </div>
         </div>
       </b-col>
     </b-row>
   </div>
 
-  <div class="wrapper">
+  <div class="log-content">
     <div class="students-list">
-      <b-input v-model="filterString" class="search" placeholder="Поиск студента..."></b-input>
+      <b-input
+        v-model="filterString"
+        class="search"
+        placeholder="Поиск студента..."
+      ></b-input>
       <div class="items-container">
         <div
           class="item"
           v-for="(student, index) in filteredStudents"
           :key="`student-${index}`"
-          @click="editStudent(student)"
         >
           <b-row class="w-100">
             <b-col cols="8" class="my-auto">{{ student.fullName }}</b-col>
-            <b-col cols="4">{{ student.group }}</b-col>
+            <b-col cols="4">{{ getStudentGroup(student).name }}</b-col>
           </b-row>
         </div>
       </div>
     </div>
+
     <div class="tables">
       <!-- BEGIN MARKS TABLE -->
       <div class="schedule-table" v-if="state === 'schedule'">
         <div class="title">
-          <template v-for="(semestrModule, moduleIndex) in moduleWeeks">
+          <template v-for="(weeks, moduleIndex) in moduleWeeks">
             <div
               class="item"
-              v-for="(week, weekIndex) in semestrModule.dates"
+              v-for="(week, weekIndex) in weeks"
               :key="`week-${moduleIndex}-${weekIndex}`"
-            >{{ week | moment('DD.MM') }}</div>
+            >
+              {{ week.date | moment('DD.MM') }}
+            </div>
             <div class="item module" :key="`title-module-${moduleIndex}`">
               <b>M {{ moduleIndex + 1 }}</b>
             </div>
@@ -48,36 +70,42 @@
           <div class="item module">Баллы</div>
         </div>
 
-        <div class="rows-container">
+        <div class="rows-container" :key="uniqueVisitsKey">
           <div
             class="items-row"
             v-for="(student, studentIndex) in filteredStudents"
             :key="`student-row-${studentIndex}`"
           >
-            <template v-for="(semestrModule, moduleindex) in student.modules">
+            <template
+              v-for="(module, moduleIndex) in getStudentVisits(student)"
+            >
               <div
                 class="item"
-                v-for="(mark, markIndex) in semestrModule.marks"
-                :key="`mark-${studentIndex}-${moduleindex}-${markIndex}`"
+                v-for="(visit, visitIndex) in module"
+                :key="`mark-${studentIndex}-${moduleIndex}-${visitIndex}`"
               >
-                <b-form-select v-model="mark.value" :options="markOptions"></b-form-select>
+                <b-form-select
+                  :value="(visit && visit.mark) || null"
+                  :options="markOptions"
+                  @input="(value) => onMarkChanged(student, moduleIndex, visitIndex, value)"
+                ></b-form-select>
               </div>
               <div
                 class="item module"
-                :key="`marks-module-${studentIndex}-${moduleindex}`"
-              >{{ semestrModule.summ }}</div>
+                :key="`marks-module-${studentIndex}-${moduleIndex}`"
+              >{{ getModuleSumm(module) }}</div>
             </template>
-            <div class="item module">{{ student.modules.reduce((s, v) => s + v.summ, 0) }}</div>
+            <div class="item module">{{ getStudentSumm(student) }}</div>
           </div>
         </div>
       </div>
       <!-- END MARKS TABLE -->
 
       <!-- BEGIN TESTS TABLE -->
-      <div class="tests-table" v-else-if="state === 'tests'">
+      <!--<div class="tests-table" v-else-if="state === 'tests'">
         <div class="title">
           <template v-for="(test, testIndex) in tests">
-            <div class="item" :key="`test-${testIndex}`">{{test.name}}</div>
+            <div class="item" :key="`test-${testIndex}`">{{ test.name }}</div>
           </template>
         </div>
         <div class="rows-container">
@@ -87,17 +115,23 @@
             :key="`student-row-${studentIndex}`"
           >
             <template v-for="(testMark, markIndex) in student.testMarks">
-              <div class="item" :key="`test-result-${studentIndex}-${markIndex}`">
-                <b-input v-model="testMark.value"/>
-              </div>
               <div
                 class="item"
-                :key="`test-mark-${studentIndex}-${markIndex}`"
-              >{{testMark.value ? tests[markIndex].convert(testMark.value) : '-'}}</div>
+                :key="`test-result-${studentIndex}-${markIndex}`"
+              >
+                <b-input v-model="testMark.value"></b-input>
+              </div>
+              <div class="item" :key="`test-mark-${studentIndex}-${markIndex}`">
+                {{
+                  testMark.value
+                    ? tests[markIndex].convert(testMark.value)
+                    : '-'
+                }}
+              </div>
             </template>
           </div>
         </div>
-      </div>
+      </div>-->
       <!-- END TESTS TABLE -->
     </div>
   </div>

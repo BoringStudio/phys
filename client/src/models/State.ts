@@ -2,6 +2,9 @@ import axios from 'axios';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 
+import moment from 'moment-timezone';
+moment.tz.setDefault('Europe/Moscow');
+
 import { UserManager } from './managers/User';
 import { ClassroomManager } from './managers/Classroom';
 import { TestManager } from './managers/Test';
@@ -13,6 +16,7 @@ import { ModuleManager } from './managers/Module';
 import { SemesterManager } from './managers/Semester';
 import { LessonManager } from './managers/Lesson';
 import { ParameterManager } from './managers/Parameters';
+import { StudentVisitManager } from './managers/StudentVisit';
 
 export class State {
   public userManager: UserManager = new UserManager();
@@ -26,6 +30,7 @@ export class State {
   public semesterManager: SemesterManager = new SemesterManager();
   public lessonManager: LessonManager = new LessonManager();
   public parameterManager: ParameterManager = new ParameterManager();
+  public studentVisitManager: StudentVisitManager = new StudentVisitManager();
 }
 
 const state = new State();

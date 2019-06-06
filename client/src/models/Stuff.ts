@@ -48,6 +48,16 @@ export const sync = (
   }
 };
 
+export const findById = <T extends { id: number }>(source: T[], id: number) => {
+  const index = source.findIndex((e) => e.id === id);
+
+  return index < 0 ? null : source[index];
+};
+
+export const findIndexById = (array: Array<{ id: number }>, id: number) => {
+  return array.findIndex((v) => v.id === id);
+};
+
 export type DayNumber = 0 | 1 | 2 | 3 | 4 | 5;
 export type LessonNumber = 0 | 1 | 2 | 3 | 4;
 

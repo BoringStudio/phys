@@ -6,6 +6,7 @@ import {
   ValidateNested,
   IsArray
 } from 'class-validator';
+import moment from 'moment-timezone';
 
 import { IsBefore } from '@/constraints';
 
@@ -65,4 +66,14 @@ export const checkAllInRange = (
   ranges: Array<{ begin: Date; end: Date }>
 ) => {
   return ranges.every((m) => m.begin >= target.begin && m.end <= target.end);
+};
+
+export const normalizeDates = (range: { begin: Date; end: Date }) => {
+  range.begin = moment(range.begin)
+    .startOf('day')
+    .toDate();
+
+  range.end = moment(range.end)
+    .endOf('day')
+    .toDate();
 };

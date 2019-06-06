@@ -7,10 +7,7 @@ $summ-color: #bfd8d5;
 $students-width: 425px;
 
 .log-page {
-  .wrapper {
-    min-width: 1000px;
-    overflow-x: auto;
-
+  .log-content {
     display: flex;
     flex-direction: row;
   }
@@ -93,6 +90,7 @@ $students-width: 425px;
 
   .tables {
     width: 100%;
+    overflow-x: scroll;
 
     .rows-container {
       display: flex;
@@ -106,7 +104,7 @@ $students-width: 425px;
       flex-direction: row;
 
       .item {
-        width: 3.5em;
+        min-width: 3.5em;
         height: 100%;
         @extend .item-centered;
 

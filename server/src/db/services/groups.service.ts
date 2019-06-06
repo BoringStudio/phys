@@ -2,7 +2,7 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { GroupCreationInfo, GroupEditionInfo } from '../models/Group';
 
-const groupsTable = 'groups';
+export const groupsTable = 'groups';
 
 export class GroupsService {
   private db: knex;

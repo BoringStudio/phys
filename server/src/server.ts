@@ -8,6 +8,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { config } from './config';
+import moment from 'moment-timezone';
+moment.tz.setDefault('Europe/Moscow');
 
 import { UsersService } from './db/services/users.service';
 import { GroupsService } from './db/services/groups.service';
