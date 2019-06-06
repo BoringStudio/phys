@@ -10,7 +10,7 @@
       </b-form-group>
 
       <b-form-group label="Отчество">
-        <b-form-input type="text" autocomplete="false" v-model="data.middleName"/>
+        <b-form-input type="text" autocomplete="false" v-model="data.middlename"/>
       </b-form-group>
 
       <b-form-radio-group :options="genderOptions" autocomplete="false" v-model="data.gender"/>

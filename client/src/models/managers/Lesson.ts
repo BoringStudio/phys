@@ -78,8 +78,7 @@ export type LessonEvent =
   | 'lesson_updated'
   | 'lesson_removed'
   | 'lesson_student_added'
-  | 'lesson_student_removed'
-  | 'lesson_student_visit_changed';
+  | 'lesson_student_removed';
 
 export class LessonManager {
   public async fetchAll(onlyCurrentSemester: boolean = true) {

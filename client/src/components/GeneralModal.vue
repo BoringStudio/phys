@@ -27,13 +27,6 @@ import { Component, Prop, Vue, Mixins } from 'vue-property-decorator';
 export class ModalMixin extends Vue {
   private modal!: GeneralModal;
 
-  private mounted() {
-    this.modal = this.$children[0] as GeneralModal;
-    this.modal.$on('submit', (data: any) => {
-      this.$emit('submit', data);
-    });
-  }
-
   public setVisible(visible: boolean) {
     this.modal.setVisible(visible);
   }
@@ -44,6 +37,13 @@ export class ModalMixin extends Vue {
 
   public show(data: object) {
     this.modal.show(data);
+  }
+
+  private mounted() {
+    this.modal = this.$children[0] as GeneralModal;
+    this.modal.$on('submit', (data: any) => {
+      this.$emit('submit', data);
+    });
   }
 }
 

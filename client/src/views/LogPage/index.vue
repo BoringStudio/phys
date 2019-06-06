@@ -63,7 +63,7 @@ export default class LogPage extends Vue {
 
   private moduleWeeks: ModuleWeek[][] = [];
   private weekToModule: Map<number, number> = new Map();
-  private moduleVisits: (StudentVisit | null)[][][] = [];
+  private moduleVisits: Array<StudentVisit | null>[][] = [];
 
   private created() {
     this.$bus.on(
@@ -101,6 +101,19 @@ export default class LogPage extends Vue {
         deleteByIndex(this.students, entry.studentId);
 
         this.fillStudentVisits();
+      }
+    );
+
+    this.$bus.on('student_visit_updated', (visit: StudentVisit) => {
+      insertOrUpdate(this.studentVisits, visit);
+    });
+
+    this.$bus.on(
+      ['student_visit_created', 'student_visit_removed'],
+      async () => {
+        this.studentVisits = await this.$state.studentVisitManager.fetchLessonVisits(
+          this.lesson.id
+        );
       }
     );
   }

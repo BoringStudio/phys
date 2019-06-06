@@ -8,7 +8,7 @@ export interface IStudentData {
   id: number;
   surname: string;
   name: string;
-  middlename: string | null;
+  middlename: string;
   gender: Gender;
   group: number;
 }
@@ -17,7 +17,7 @@ export class Student implements IStudentData {
   public id: number = -1;
   public surname: string = '';
   public name: string = '';
-  public middlename: string | null = null;
+  public middlename: string = '';
   public gender: Gender = 'male';
   public group: number = -1;
 
@@ -37,7 +37,7 @@ export class Student implements IStudentData {
   public get fullName() {
     return (
       `${this.surname} ${this.name}` +
-      (this.middlename ? ` ${this.middlename}` : '')
+      (this.middlename.length > 0 ? ` ${this.middlename}` : '')
     );
   }
 }

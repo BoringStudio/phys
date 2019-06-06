@@ -145,13 +145,12 @@ body {
 
 .layout {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: row;
 
   .sidebar {
     width: $sidebar-width;
-    height: 100%;
 
     flex: none;
     display: flex;
