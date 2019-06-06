@@ -2,18 +2,28 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
 
-import bus from '@/model/Bus';
-import state from '@/model/State';
+import bus from '@/models/Bus';
+import state from '@/models/State';
 
 import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-vue/dist/bootstrap-vue.min.css';
 
+import { ModelSelect, ModelListSelect, MultiSelect } from 'vue-search-select';
+Vue.component('b-model-select', ModelSelect);
+Vue.component('b-model-list-select', ModelListSelect);
+Vue.component('b-multi-select', MultiSelect);
+
 import Notifications from 'vue-notification';
 Vue.use(Notifications);
 
+import Datepicker from 'vuejs-datepicker';
+Vue.component('datepicker', Datepicker);
+
 import VueMoment from 'vue-moment';
 import 'moment/locale/ru';
+import moment from 'moment-timezone';
+moment.tz.setDefault();
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faEdit, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';

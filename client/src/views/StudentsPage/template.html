@@ -1,4 +1,18 @@
-<div class="page students-list-page">
-  <h3>Список студентов</h3>
-  <hr />
-</div>
+<page title="Список студентов">
+  <template v-slot:actions>
+    <b-button class="ml-3" variant="success" @click="addStudent">
+      <span>Добавить</span>
+    </b-button>
+  </template>
+
+  <cards-list
+    :items="students"
+    editable
+    @edit="editStudent"
+    @remove="removeStudent"
+  >
+    <template v-slot="{ item }">{{ item.fullName }}</template>
+  </cards-list>
+
+  <student-modal ref="student-modal"></student-modal>
+</page>

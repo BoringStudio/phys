@@ -13,25 +13,13 @@
           <div>{{ fullName }}</div>
         </div>
         <div
+          v-for="(item, index) in pages"
+          :key="`page-${index}`"
           class="button noselect"
-          :class="isButtonActive('main')"
-          @click="open('main')"
-        >Расписание</div>
-        <div
-          class="button noselect"
-          :class="isButtonActive('students')"
-          @click="open('students')"
-        >Список студентов</div>
-        <div
-          class="button noselect"
-          :class="isButtonActive('tests')"
-          @click="open('tests')"
-        >Нормативы</div>
-        <div
-          class="button noselect"
-          :class="isButtonActive('classrooms')"
-          @click="open('classrooms')"
-        >Аудитории</div>
+          :class="isButtonActive(item.page)"
+          @click="open(item.page)"
+          v-text="item.title"
+        ></div>
 
         <div class="button exit-button noselect" @click="onExit">Выход</div>
       </div>
@@ -93,6 +81,43 @@ export default class App extends Vue {
 
     return this.$state.userManager.currentUser!.fullName;
   }
+
+  private get pages() {
+    return [
+      {
+        page: 'main',
+        title: 'Расписание'
+      },
+      {
+        page: 'students',
+        title: 'Список студентов'
+      },
+      {
+        page: 'groups',
+        title: 'Группы'
+      },
+      {
+        page: 'tests',
+        title: 'Нормативы'
+      },
+      {
+        page: 'disciplines',
+        title: 'Дисциплины'
+      },
+      {
+        page: 'marks',
+        title: 'Оценки'
+      },
+      {
+        page: 'classrooms',
+        title: 'Аудитории'
+      },
+      {
+        page: 'semesters',
+        title: 'Семестры'
+      }
+    ];
+  }
 }
 </script>
 
@@ -120,13 +145,12 @@ body {
 
 .layout {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: row;
 
   .sidebar {
     width: $sidebar-width;
-    height: 100%;
 
     flex: none;
     display: flex;
@@ -177,7 +201,10 @@ body {
   .page {
     width: 100%;
     overflow-y: scroll;
-    padding: 20px 40px
+    padding: 20px 40px;
+
+    display: flex;
+    flex-direction: column;
   }
 }
 </style>

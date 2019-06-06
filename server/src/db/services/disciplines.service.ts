@@ -1,10 +1,11 @@
 import knex from 'knex';
+import _ from 'underscore';
+
 import { Connection } from '../connection';
 import {
   DisciplineCreationInfo,
   DisciplineEditionInfo
 } from '../models/Discipline';
-import { testsTable } from './tests.service';
 
 const disciplinesTable = 'disciplines';
 const disciplineTestsTable = 'discipline_tests';
@@ -17,7 +18,9 @@ export class DisciplinesService {
   }
 
   public getAll() {
-    return this.db(disciplinesTable).select('*');
+    return this.db(disciplinesTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {
@@ -27,6 +30,14 @@ export class DisciplinesService {
         id
       })
       .first();
+  }
+
+  public search(match: string, limit: number) {
+    return this.db(disciplinesTable)
+      .select('*')
+      .whereRaw('LOWER(name) LIKE LOWER(?)', [`%${match}%`])
+      .orderBy('id')
+      .limit(limit);
   }
 
   public create(data: DisciplineCreationInfo) {
@@ -53,13 +64,9 @@ export class DisciplinesService {
 
   public getTests(id: number) {
     return this.db(disciplineTestsTable)
-      .join(testsTable, (qb) => {
-        qb.on(`${disciplineTestsTable}.test`, `${testsTable}.id`).andOn(
-          `${disciplineTestsTable}.discipline`,
-          this.db.raw('?', [id])
-        );
-      })
-      .select(`${testsTable}.*`);
+      .select('test')
+      .where('discipline', id)
+      .orderBy('test');
   }
 
   public addTest(disciplineId: number, testId: number) {
@@ -67,6 +74,28 @@ export class DisciplinesService {
       discipline: disciplineId,
       test: testId
     });
+  }
+
+  public async updateTests(disciplineId: number, testIds: number[]) {
+    const existing = (await this.db(disciplineTestsTable)
+      .where('discipline', disciplineId)
+      .select('test')).map((v: { test: number }) => v.test);
+
+    const toDelete = _.difference(existing, testIds);
+    const toInsert = _.difference(testIds, existing);
+
+    await Promise.all([
+      this.db(disciplineTestsTable)
+        .whereIn('test', toDelete)
+        .andWhere('discipline', disciplineId)
+        .delete(),
+      this.db(disciplineTestsTable).insert(
+        toInsert.map((id) => ({
+          test: id,
+          discipline: disciplineId
+        }))
+      )
+    ]);
   }
 
   public removeTest(disciplineId: number, testId: number) {

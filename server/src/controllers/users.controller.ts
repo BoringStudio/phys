@@ -5,24 +5,21 @@ import {
   Get,
   Param,
   OnUndefined,
-  NotFoundError,
-  BadRequestError,
-  UseBefore
+  NotFoundError
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { UsersService } from '@/db/services/users.service';
 import { User, UserCreationInfo } from '@/db/models/User';
-import { AuthMiddleware } from '@/middlewares/auth.middleware';
+import { simpleErrorHandler, alreadyExistsErrorHandler } from '@/errors';
 
 @JsonController()
-@UseBefore(AuthMiddleware)
 export class UsersController {
   private users: UsersService = injector.get(UsersService);
 
   @Get('/users')
   public async getAll() {
-    const users = await this.users.getAll();
+    const users = await this.users.getAll().catch(simpleErrorHandler);
 
     return users.map((user: User) => {
       const { password, ...res } = user;
@@ -33,7 +30,7 @@ export class UsersController {
   @Get('/user/:id')
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
-    const user = await this.users.getSingle(id);
+    const user = await this.users.getSingle(id).catch(simpleErrorHandler);
 
     if (user == null) {
       return;
@@ -44,14 +41,9 @@ export class UsersController {
   }
 
   @Post('/user')
-  @OnUndefined(BadRequestError)
   public async create(@Body() data: UserCreationInfo) {
-    try {
-      const user = await this.users.create(data);
-      const { password, ...res } = user;
-      return res;
-    } catch (e) {
-      return;
-    }
+    const user = await this.users.create(data).catch(alreadyExistsErrorHandler);
+    const { password, ...res } = user;
+    return res;
   }
 }

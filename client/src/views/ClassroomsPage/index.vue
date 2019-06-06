@@ -2,50 +2,67 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Classroom } from '@/model/Classroom';
+import { Classroom } from '@/models/managers/Classroom';
+import { updateIfExists } from '@/models/Stuff';
 
+import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
-import GeneralModal from '@/components/GeneralModal.vue';
+import ClassroomModal from '@/components/ClassroomModal.vue';
 
 @Component({
   components: {
+    Page,
     CardsList,
-    GeneralModal
+    ClassroomModal
   }
 })
 export default class ClassroomsPage extends Vue {
-  private classroomModal!: GeneralModal;
+  private classroomModal!: ClassroomModal;
 
   private classrooms: Classroom[] = [];
 
   private created() {
-    this.$bus.on('classrooms_changed', () => {
-      this.classrooms = this.$state.classroomManager.classrooms;
+    this.$bus.on('classroom_updated', (classroom: Classroom) => {
+      updateIfExists(this.classrooms, classroom);
+    });
+    this.$bus.on(['classroom_created', 'classroom_removed'], async () => {
+      this.classrooms = await this.$state.classroomManager.fetchAll();
     });
   }
 
   private async mounted() {
-    this.classroomModal = this.$refs['classroom-modal'] as GeneralModal;
+    this.classroomModal = this.$refs['classroom-modal'] as ClassroomModal;
     this.classroomModal.$on('submit', async (classroom: Classroom) => {
       this.classroomModal.setInProcess(true);
 
+      const create: boolean = classroom.id < 0;
+
       try {
-        await this.$state.classroomManager.create(classroom.name);
+        if (create) {
+          await this.$state.classroomManager.create(classroom);
+        } else {
+          await this.$state.classroomManager.update(classroom);
+        }
+
         this.classroomModal.setVisible(false);
       } catch (e) {
         this.$notify({
-          title: 'Невозможно создать аудиторию',
+          title: `Невозможно ${create ? 'создать' : 'изменить'} аудиторию`,
           type: 'error'
         });
         this.classroomModal.setInProcess(false);
       }
     });
 
-    this.$state.classroomManager.fetchAll();
+    this.classrooms = await this.$state.classroomManager.fetchAll();
   }
 
   private addClassroom() {
     this.classroomModal.show(new Classroom());
+  }
+
+  private editClassroom(classroom: Classroom) {
+    this.classroomModal.show(classroom);
   }
 
   private async removeClassroom(item: Classroom) {

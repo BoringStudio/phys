@@ -2,30 +2,36 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Test } from '@/model/Test';
+import { Test } from '@/models/managers/Test';
+import { updateIfExists } from '@/models/Stuff';
 
+import Page from '@/components/Page.vue';
 import CardsList from '@/components/CardsList.vue';
-import GeneralModal from '@/components/GeneralModal.vue';
+import TestModal from '@/components/TestModal.vue';
 
 @Component({
   components: {
+    Page,
     CardsList,
-    GeneralModal
+    TestModal
   }
 })
 export default class TestsPage extends Vue {
-  private testModal!: GeneralModal;
+  private testModal!: TestModal;
 
   private tests: Test[] = [];
 
   private created() {
-    this.$bus.on('tests_changed', () => {
-      this.tests = this.$state.testManager.tests;
+    this.$bus.on('test_updated', (test: Test) => {
+      updateIfExists(this.tests, test);
+    });
+    this.$bus.on(['test_created', 'test_removed'], async () => {
+      this.tests = await this.$state.testManager.fetchAll();
     });
   }
 
   private async mounted() {
-    this.testModal = this.$refs['test-modal'] as GeneralModal;
+    this.testModal = this.$refs['test-modal'] as TestModal;
     this.testModal.$on('submit', async (test: Test) => {
       this.testModal.setInProcess(true);
 
@@ -41,14 +47,14 @@ export default class TestsPage extends Vue {
         this.testModal.setVisible(false);
       } catch (e) {
         this.$notify({
-          title: `Невозможно ${create ? 'создать' : 'изменить'} аудиторию`,
+          title: `Невозможно ${create ? 'создать' : 'изменить'} норматив`,
           type: 'error'
         });
         this.testModal.setInProcess(false);
       }
     });
 
-    this.$state.testManager.fetchAll();
+    this.tests = await this.$state.testManager.fetchAll();
   }
 
   private addTest() {

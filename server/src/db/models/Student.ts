@@ -18,9 +18,8 @@ export class StudentCreationInfo {
   @Length(2, 50)
   public name: string;
 
-  @IsOptional()
-  @Length(2, 50)
-  public middlename?: string;
+  @Length(0, 50)
+  public middlename: string;
 
   @IsIn(['male', 'female'])
   public gender: StudentGender;
@@ -42,8 +41,8 @@ export class StudentEditionInfo {
   public name: string;
 
   @IsOptional()
-  @Length(2, 50)
-  public middlename?: string | null;
+  @Length(0, 50)
+  public middlename: string;
 
   @IsOptional()
   @IsIn(['male', 'female'])

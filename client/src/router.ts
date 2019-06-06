@@ -5,11 +5,14 @@ import Router from 'vue-router';
 import LogPage from '@/views/LogPage/index.vue';
 import TimetablePage from '@/views/TimetablePage/index.vue';
 import StudentsPage from '@/views/StudentsPage/index.vue';
-
+import GroupsPage from '@/views/GroupsPage/index.vue';
 import TestsPage from '@/views/TestsPage/index.vue';
 import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
+import DisciplinesPage from '@/views/DisciplinesPage/index.vue';
+import MarksPage from '@/views/MarksPage/index.vue';
+import SemestersPage from '@/views/SemestersPage/index.vue';
 
-import state from '@/model/State';
+import state from '@/models/State';
 
 const loginPage = () => import('@/views/LoginPage/index.vue');
 
@@ -30,7 +33,12 @@ const router = new Router({
       component: StudentsPage
     },
     {
-      path: '/log',
+      path: '/groups',
+      name: 'groups',
+      component: GroupsPage
+    },
+    {
+      path: '/log/:id',
       name: 'log',
       component: LogPage
     },
@@ -40,9 +48,24 @@ const router = new Router({
       component: TestsPage
     },
     {
+      path: '/disciplines',
+      name: 'disciplines',
+      component: DisciplinesPage
+    },
+    {
+      path: '/makrs',
+      name: 'marks',
+      component: MarksPage
+    },
+    {
       path: '/classrooms',
       name: 'classrooms',
       component: ClassroomsPage
+    },
+    {
+      path: '/semesters',
+      name: 'semesters',
+      component: SemestersPage
     },
     {
       path: '/login',

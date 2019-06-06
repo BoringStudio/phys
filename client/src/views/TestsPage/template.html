@@ -1,69 +1,13 @@
-<div class="page tests-page">
-  <h3>
-    <span>Нормативы</span>
-    <b-button class="ml-3" variant="success" @click="addTest">
+<page title="Нормативы">
+  <template v-slot:actions>
+    <b-button variant="success" @click="addTest">
       <span>Добавить</span>
     </b-button>
-  </h3>
-  <hr />
-  <b-row class="justify-content-md-center">
-    <b-col cols="12" md="8" lg="6">
-      <cards-list :items="tests" editable @edit="editTest" @remove="removeTest">
-        <template v-slot="{ item }">{{ item.name }}</template>
-      </cards-list>
-    </b-col>
-  </b-row>
+  </template>
 
-  <general-modal ref="test-modal" size="lg" title="Норматив">
-    <template v-slot="{ data }">
-      <b-form-group label="Название">
-        <b-form-input
-          type="text"
-          autocomplete="false"
-          v-model="data.name"
-        ></b-form-input>
-      </b-form-group>
+  <cards-list :items="tests" editable @edit="editTest" @remove="removeTest">
+    <template v-slot="{ item }">{{ item.name }}</template>
+  </cards-list>
 
-      <b-form-group label="Метод оценки">
-        <b-form-select
-          :options="[
-            { value: -1, text: 'меньше - лучше' },
-            { value: 1, text: 'больше - лучше' },
-          ]"
-          v-model="data.direction"
-        ></b-form-select>
-      </b-form-group>
-
-      <br />
-
-      <table class="table b-table table-striped table-sm">
-        <thead>
-          <tr>
-            <th>Кол-во баллов</th>
-            <th>Юноши</th>
-            <th>Девушки</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="i in 5">
-            <td class="text-center align-middle">{{ i }}</td>
-            <td>
-              <b-form-input
-                type="number"
-                autocomplete="false"
-                v-model="data.maleMarks[i - 1]"
-              ></b-form-input>
-            </td>
-            <td>
-              <b-form-input
-                type="number"
-                autocomplete="false"
-                v-model="data.femaleMarks[i - 1]"
-              ></b-form-input>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </template>
-  </general-modal>
-</div>
+  <test-modal ref="test-modal"></test-modal>
+</page>

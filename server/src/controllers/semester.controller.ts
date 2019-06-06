@@ -8,50 +8,84 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  UseBefore
+  BadRequestError
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { SemestersService } from '@/db/services/semesters.service';
 import {
-  SemesterCreationInfo,
-  SemesterEditionInfo
+  SemesterWithModulesCreationInfo,
+  SemesterWithModulesEditionInfo,
+  checkAllInRange,
+  normalizeDates
 } from '@/db/models/Semester';
-import { AlreadyExistsError } from '../errors';
-import { AuthMiddleware } from '@/middlewares/auth.middleware';
+import { ModulesService } from '@/db/services/modules.service';
+import { simpleErrorHandler, haveDependenciesErrorHandler } from '@/errors';
 
 @JsonController()
-@UseBefore(AuthMiddleware)
 export class SemestersController {
   private semesters: SemestersService = injector.get(SemestersService);
+  private modules: ModulesService = injector.get(ModulesService);
 
   @Get('/semesters')
   public async getAll() {
-    return await this.semesters.getAll();
+    return await this.semesters.getAll().catch(simpleErrorHandler);
   }
 
   @Get('/semester/:id')
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
-    return await this.semesters.getSingle(id);
+    return await this.semesters.getSingle(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/semester/:id/modules')
+  @OnUndefined(NotFoundError)
+  public async getModules(@Param('id') id: any) {
+    return await this.semesters.getModules(id).catch(simpleErrorHandler);
   }
 
   @Post('/semester')
-  @OnUndefined(AlreadyExistsError)
-  public async create(@Body() data: SemesterCreationInfo) {
-    try {
-      const [id] = await this.semesters.create(data);
-      return id;
-    } catch (e) {
-      return;
+  public async create(@Body() data: SemesterWithModulesCreationInfo) {
+    if (!checkAllInRange(data, data.modules)) {
+      throw new BadRequestError();
     }
+
+    normalizeDates(data);
+    data.modules.forEach((m) => normalizeDates(m));
+
+    const [id] = await this.semesters.create(data);
+
+    const moduleIds = (await Promise.all(
+      data.modules.map((m) => {
+        m.semester = id;
+        return this.modules.create(m);
+      })
+    ).catch(simpleErrorHandler)).map((res: { id: number }) => res.id);
+
+    return {
+      id,
+      moduleIds
+    };
   }
 
   @Put('/semester')
-  @OnUndefined(AlreadyExistsError)
-  public async update(@Body() data: SemesterEditionInfo) {
+  public async update(@Body() data: SemesterWithModulesEditionInfo) {
     try {
+      if (!checkAllInRange(data, data.modules)) {
+        return; // TODO: throw smth like DateRangeError
+      }
+
+      normalizeDates(data);
+      data.modules.forEach((m) => normalizeDates(m));
+
       await this.semesters.update(data);
+
+      await Promise.all(
+        data.modules.map((m) => {
+          return this.modules.update(m);
+        })
+      ).catch(simpleErrorHandler);
+
       return {};
     } catch (e) {
       return;
@@ -60,7 +94,7 @@ export class SemestersController {
 
   @Delete('/semester/:id')
   public async remove(@Param('id') id: any) {
-    await this.semesters.remove(id);
+    await this.semesters.remove(id).catch(haveDependenciesErrorHandler);
     return {};
   }
 }

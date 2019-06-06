@@ -1,0 +1,18 @@
+<page title="Дисциплины">
+  <template v-slot:actions>
+    <b-button class="ml-3" variant="success" @click="addDiscipline">
+      <span>Добавить</span>
+    </b-button>
+  </template>
+
+  <cards-list
+    :items="disciplines"
+    editable
+    @edit="editDiscipline"
+    @remove="removeDiscipline"
+  >
+    <template v-slot="{ item }">{{ item.name }}</template>
+  </cards-list>
+
+  <discipline-modal ref="discipline-modal"></discipline-modal>
+</page>

@@ -1,6 +1,6 @@
 declare module 'globals' {
-  import { Bus } from '@/model/Bus';
-  import { State } from '@/model/State';
+  import { Bus } from '@/models/Bus';
+  import { State } from '@/models/State';
 
   module 'vue/types/vue' {
     interface Vue {

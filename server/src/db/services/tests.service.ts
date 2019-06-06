@@ -12,7 +12,9 @@ export class TestsService {
   }
 
   public getAll() {
-    return this.db(testsTable).select('*');
+    return this.db(testsTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {

@@ -2,7 +2,6 @@ import {
   JsonController,
   Post,
   Body,
-  OnUndefined,
   UnauthorizedError
 } from 'routing-controllers';
 import jwt from 'jsonwebtoken';
@@ -11,6 +10,7 @@ import { Length } from 'class-validator';
 import { injector } from '@/server';
 
 import { UsersService } from '@/db/services/users.service';
+import { simpleErrorHandler } from '@/errors';
 
 class AuthRequest {
   @Length(4, 50)
@@ -25,12 +25,13 @@ export class AuthController {
   private users: UsersService = injector.get(UsersService);
 
   @Post('/auth')
-  @OnUndefined(UnauthorizedError)
   public async auth(@Body() data: AuthRequest) {
-    const user = await this.users.findByAuthData(data.login, data.password);
+    const user = await this.users
+      .findByAuthData(data.login, data.password)
+      .catch(simpleErrorHandler);
 
     if (user == null) {
-      return;
+      throw new UnauthorizedError();
     }
 
     const { password, ...payload } = user;

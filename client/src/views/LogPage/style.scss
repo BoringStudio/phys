@@ -7,12 +7,10 @@ $summ-color: #bfd8d5;
 $students-width: 425px;
 
 .log-page {
-  .wrapper {
-    min-width: 1000px;
-    overflow-x: auto;
-
+  .log-content {
     display: flex;
     flex-direction: row;
+    position: relative;
   }
 
   & > .title {
@@ -93,22 +91,27 @@ $students-width: 425px;
 
   .tables {
     width: 100%;
+    overflow-x: scroll;
+    position: relative;
 
     .rows-container {
-      display: flex;
+      min-width: 100%;
+      display: inline-flex;
       flex-direction: column;
     }
 
     .items-row,
     .title {
+      width: 100%;
       height: $row-height;
-      display: flex;
+      display: inline-flex;
       flex-direction: row;
 
       .item {
-        width: 3.5em;
+        min-width: 3.5em;
         height: 100%;
         @extend .item-centered;
+        position: static;
 
         font-weight: bold;
 
@@ -128,6 +131,11 @@ $students-width: 425px;
             transition: none;
             box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
           }
+        }
+
+        &.button:hover {
+          cursor: pointer;
+          box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.75);
         }
       }
 
@@ -172,6 +180,37 @@ $students-width: 425px;
 
     .items-row .item {
       width: 7em;
+    }
+  }
+
+  .infos-table {
+    .title .item,
+    .items-row .item {
+      min-width: 3.5em;
+
+      &.wide {
+        min-width: 7em;
+      }
+
+      &.wider {
+        min-width: 14em;
+      }
+
+      .vdp-datepicker {
+        width: 100%;
+      }
+
+      .clear-button {
+        width: 4em;
+        height: 100%;
+        @extend .item-centered;
+        @extend .noselect;
+
+        &:hover {
+          cursor: pointer;
+          background-color: rgba(0, 0, 0, 0.075);
+        }
+      }
     }
   }
 }

@@ -3,55 +3,129 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import { Lesson } from '@/models/managers/Lesson';
+import { Classroom } from '@/models/managers/Classroom';
+import { Discipline } from '@/models/managers/Discipline';
+import {
+  updateIfExists,
+  DayNumber,
+  getDayName,
+  LessonNumber,
+  getLessonNumberName
+} from '@/models/Stuff';
 
-import GeneralModal from '@/components/GeneralModal.vue';
-
-import { Day, Lesson, LessonInstance } from '@/model/Lesson';
-import state from '@/model/State';
+import Page from '@/components/Page.vue';
+import LessonModal from '@/components/LessonModal.vue';
 
 @Component({
   components: {
-    GeneralModal
+    Page,
+    LessonModal
   }
 })
 export default class TimeTablePage extends Vue {
-  private lessonInstanceModal!: GeneralModal;
+  private lessonModal!: LessonModal;
 
-  private days: Day[] = [];
+  private lessons: Lesson[] = [];
+  private classrooms: Classroom[] = [];
+  private disciplines: Discipline[] = [];
 
-  private mounted() {
-    this.lessonInstanceModal = this.$refs[
-      'lesson-instance-modal'
-    ] as GeneralModal;
+  private async created() {
+    this.$bus.on('lesson_updated', (lesson: Lesson) => {
+      updateIfExists(this.lessons, lesson);
+    });
+    this.$bus.on(['lesson_created', 'lesson_removed'], async () => {
+      this.lessons = await this.$state.lessonManager.fetchAll();
+    });
+  }
 
-    this.lessonInstanceModal.$on('submit', (lessonInstance: LessonInstance) => {
-      if (lessonInstance.lesson) {
-        lessonInstance.lesson.instances.push(lessonInstance);
+  private async mounted() {
+    this.lessonModal = this.$refs['lesson-modal'] as LessonModal;
+    this.lessonModal.$on('submit', async (lesson: Lesson) => {
+      this.lessonModal.setInProcess(true);
+
+      const create: boolean = lesson.id < 0;
+
+      try {
+        if (create) {
+          await this.$state.lessonManager.create(lesson);
+        } else {
+          await this.$state.lessonManager.update(lesson);
+        }
+
+        this.lessonModal.setVisible(false);
+      } catch (e) {
+        this.$notify({
+          title: `Невозможно ${create ? 'создать' : 'изменить'} пару`,
+          type: 'error'
+        });
+        this.lessonModal.setInProcess(false);
       }
-
-      this.lessonInstanceModal.setVisible(false);
     });
 
-    this.days = [
-      new Day('Понедельник'),
-      new Day('Вторник'),
-      new Day('Среда'),
-      new Day('Четверг'),
-      new Day('Пятница'),
-      new Day('Суббота')
-    ];
+    [this.classrooms, this.disciplines, this.lessons] = await Promise.all([
+      this.$state.classroomManager.fetchAll(),
+      this.$state.disciplineManager.fetchAll(),
+      this.$state.lessonManager.fetchAll()
+    ]);
   }
 
-  private addLessonInstance(lesson: Lesson) {
-    this.lessonInstanceModal.show(new LessonInstance(lesson));
+  private addLesson(day: DayNumber, num: LessonNumber) {
+    this.lessonModal.show(
+      new Lesson({
+        day,
+        number: num
+      })
+    );
   }
 
-  private openLog(lessonInstance: LessonInstance) {
-    state.currentInstance = lessonInstance;
-
+  private openLog(lesson: Lesson) {
     this.$router.push({
-      name: 'log'
+      name: 'log',
+      params: {
+        id: lesson.id.toString()
+      }
     });
+  }
+
+  private getDayName(day: DayNumber) {
+    return getDayName(day);
+  }
+
+  private getLessonNumberName(num: LessonNumber) {
+    return getLessonNumberName(num);
+  }
+
+  private get days() {
+    const result: Lesson[][][] = Array(6)
+      .fill(null)
+      .map(() => {
+        return Array(5)
+          .fill(null)
+          .map(() => []);
+      });
+
+    this.lessons.forEach((lesson) => {
+      result[lesson.day][lesson.number].push(lesson);
+    });
+
+    return result;
+  }
+
+  private getLessonClassroomName(lesson: Lesson) {
+    const index = this.classrooms.findIndex(
+      (classroom) => classroom.id === lesson.classroom
+    );
+
+    return index < 0 ? '' : this.classrooms[index].name;
+  }
+
+  private getLessonDisciplineName(lesson: Lesson) {
+    const index = this.disciplines.findIndex(
+      (discipline) => discipline.id === lesson.discipline
+    );
+
+    return index < 0 ? '' : this.disciplines[index].name;
   }
 }
 </script>

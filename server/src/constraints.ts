@@ -1,11 +1,14 @@
 import {
+  Validator,
   ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationArguments
+  ValidationArguments,
+  ValidatorConstraintInterface
 } from 'class-validator';
 
+const validator = new Validator();
+
 @ValidatorConstraint({ name: 'isBefore', async: false })
-export class IsBeforeConstraint implements ValidatorConstraintInterface {
+export class IsBefore implements ValidatorConstraintInterface {
   public validate(propertyValue: any, args: ValidationArguments) {
     return (
       new Date(propertyValue) <
@@ -49,5 +52,24 @@ export class OrExists implements ValidatorConstraintInterface {
 
   public defaultMessage(args: ValidationArguments) {
     return `"${args.property}" or "${args.constraints[0]}" must exist`;
+  }
+}
+
+@ValidatorConstraint({ name: 'isParameterValueType', async: false })
+export class IsParameterValueType implements ValidatorConstraintInterface {
+  public validate(propertyValue: any) {
+    return (
+      validator.isBoolean(propertyValue) ||
+      validator.isNumber(propertyValue) ||
+      validator.isDateString(propertyValue) ||
+      validator.isString(propertyValue)
+    );
+  }
+}
+
+@ValidatorConstraint({ name: 'nullableDateString', async: false })
+export class NullableDateString implements ValidatorConstraintInterface {
+  public validate(propertyValue: any) {
+    return validator.isDateString(propertyValue) || propertyValue === null;
   }
 }

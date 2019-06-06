@@ -15,7 +15,31 @@ export class ClassroomsService {
   }
 
   public getAll() {
-    return this.db(classroomsTable).select('*');
+    return this.db(classroomsTable)
+      .select('*')
+      .orderBy('id');
+  }
+
+  public getPage(perPage: number, page: number) {
+    return this.db(classroomsTable)
+      .select('*')
+      .orderBy('id')
+      .offset((page - 1) * perPage)
+      .limit(perPage);
+  }
+
+  public getTotalCount() {
+    return this.db(classroomsTable)
+      .count('* as count')
+      .first();
+  }
+
+  public search(match: string, limit: number) {
+    return this.db(classroomsTable)
+      .select('*')
+      .whereRaw('LOWER(name) LIKE LOWER(?)', [`%${match}%`])
+      .orderBy('id')
+      .limit(limit);
   }
 
   public getSingle(id: number) {

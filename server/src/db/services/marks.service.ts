@@ -12,7 +12,9 @@ export class MarksService {
   }
 
   public getAll() {
-    return this.db(marksTable).select('*');
+    return this.db(marksTable)
+      .select('*')
+      .orderBy('id');
   }
 
   public getSingle(id: number) {

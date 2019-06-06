@@ -17,10 +17,10 @@ interface ILogData {
   responseTime: number;
 }
 
-@Middleware({ type: 'before', priority: 90 })
+@Middleware({ type: 'before' })
 export class LoggingMiddleware implements KoaMiddlewareInterface {
   public async use(ctx: Koa.Context, next: (err?: any) => Promise<any>) {
-    const start = new Date().getMilliseconds();
+    const start = Date.now();
 
     const logData: Partial<ILogData> = {
       method: ctx.method,
@@ -45,7 +45,7 @@ export class LoggingMiddleware implements KoaMiddlewareInterface {
       }
     }
 
-    logData.responseTime = new Date().getMilliseconds() - start;
+    logData.responseTime = Date.now() - start;
     this.outputLog(logData, errorThrown);
 
     if (errorThrown) {

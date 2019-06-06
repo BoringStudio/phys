@@ -2,7 +2,7 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { GroupCreationInfo, GroupEditionInfo } from '../models/Group';
 
-const groupsTable = 'groups';
+export const groupsTable = 'groups';
 
 export class GroupsService {
   private db: knex;
@@ -12,7 +12,31 @@ export class GroupsService {
   }
 
   public getAll() {
-    return this.db(groupsTable).select('*');
+    return this.db(groupsTable)
+      .select('*')
+      .orderBy('id');
+  }
+
+  public getPage(perPage: number, page: number) {
+    return this.db(groupsTable)
+      .select('*')
+      .orderBy('id')
+      .offset((page - 1) * perPage)
+      .limit(perPage);
+  }
+
+  public getTotalCount() {
+    return this.db(groupsTable)
+      .count('* as count')
+      .first();
+  }
+
+  public search(match: string, limit: number) {
+    return this.db(groupsTable)
+      .select('*')
+      .whereRaw('LOWER(name) LIKE LOWER(?)', [`%${match}%`])
+      .orderBy('id')
+      .limit(limit);
   }
 
   public getSingle(id: number) {

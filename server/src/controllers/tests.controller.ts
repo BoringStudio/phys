@@ -7,58 +7,50 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete,
-  UseBefore
+  Delete
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { TestsService } from '@/db/services/tests.service';
 import { TestCreationInfo, TestEditionInfo } from '@/db/models/Test';
-import { AlreadyExistsError } from '../errors';
-import { AuthMiddleware } from '@/middlewares/auth.middleware';
+import {
+  AlreadyExistsError,
+  simpleErrorHandler,
+  alreadyExistsErrorHandler,
+  haveDependenciesErrorHandler
+} from '../errors';
 
 @JsonController()
-@UseBefore(AuthMiddleware)
 export class TestsController {
   private tests: TestsService = injector.get(TestsService);
 
   @Get('/tests')
   public async getAll() {
-    return await this.tests.getAll();
+    return await this.tests.getAll().catch(simpleErrorHandler);
   }
 
   @Get('/test/:id')
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
-    return await this.tests.getSingle(id);
+    return await this.tests.getSingle(id).catch(simpleErrorHandler);
   }
 
   @Post('/test')
   @OnUndefined(AlreadyExistsError)
   public async create(@Body() data: TestCreationInfo) {
-    try {
-      const [id] = await this.tests.create(data);
-      return id;
-    } catch (e) {
-      console.log(e);
-      return;
-    }
+    const [id] = await this.tests.create(data).catch(alreadyExistsErrorHandler);
+    return id;
   }
 
   @Put('/test')
-  @OnUndefined(AlreadyExistsError)
   public async update(@Body() data: TestEditionInfo) {
-    try {
-      await this.tests.update(data);
-      return {};
-    } catch (e) {
-      return;
-    }
+    await this.tests.update(data).catch(alreadyExistsErrorHandler);
+    return {};
   }
 
   @Delete('/test/:id')
   public async remove(@Param('id') id: any) {
-    await this.tests.remove(id);
+    await this.tests.remove(id).catch(haveDependenciesErrorHandler);
     return {};
   }
 }

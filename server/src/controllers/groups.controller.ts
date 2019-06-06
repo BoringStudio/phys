@@ -8,56 +8,82 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  UseBefore
+  QueryParams
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { GroupsService } from '@/db/services/groups.service';
 import { GroupCreationInfo, GroupEditionInfo } from '@/db/models/Group';
-import { AlreadyExistsError } from '../errors';
-import { AuthMiddleware } from '@/middlewares/auth.middleware';
+import {
+  simpleErrorHandler,
+  alreadyExistsErrorHandler,
+  haveDependenciesErrorHandler
+} from '../errors';
+
+import { PaginationQueryParams, SearchParams } from '@/pagination';
 
 @JsonController()
-@UseBefore(AuthMiddleware)
 export class GroupsController {
   private groups: GroupsService = injector.get(GroupsService);
 
   @Get('/groups')
-  public async getAll() {
-    return await this.groups.getAll();
+  public async getAll(@QueryParams() { page, perPage }: PaginationQueryParams) {
+    if (page == null || perPage == null) {
+      return await this.groups.getAll().catch(simpleErrorHandler);
+    }
+
+    return await this.groups.getPage(perPage, page);
+  }
+
+  @Get('/groups/search')
+  public async search(@QueryParams() { match, limit }: SearchParams) {
+    if (match == null || limit == null) {
+      return [];
+    }
+
+    let decoded = '';
+
+    try {
+      decoded = decodeURIComponent(match);
+    } catch (e) {
+      return [];
+    }
+
+    return await this.groups.search(decoded, limit).catch(simpleErrorHandler);
+  }
+
+  @Get('/groups/total')
+  public async getTotalCount() {
+    const { count } = await this.groups
+      .getTotalCount()
+      .catch(simpleErrorHandler);
+
+    return count;
   }
 
   @Get('/group/:id')
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
-    return await this.groups.getSingle(id);
+    return await this.groups.getSingle(id).catch(simpleErrorHandler);
   }
 
   @Post('/group')
-  @OnUndefined(AlreadyExistsError)
   public async create(@Body() data: GroupCreationInfo) {
-    try {
-      const [id] = await this.groups.create(data);
-      return id;
-    } catch (e) {
-      return;
-    }
+    const [id] = await this.groups
+      .create(data)
+      .catch(alreadyExistsErrorHandler);
+    return id;
   }
 
   @Put('/group')
-  @OnUndefined(AlreadyExistsError)
   public async update(@Body() data: GroupEditionInfo) {
-    try {
-      await this.groups.update(data);
-      return {};
-    } catch (e) {
-      return;
-    }
+    await this.groups.update(data).catch(alreadyExistsErrorHandler);
+    return {};
   }
 
   @Delete('/group/:id')
   public async remove(@Param('id') id: any) {
-    await this.groups.remove(id);
+    await this.groups.remove(id).catch(haveDependenciesErrorHandler);
     return {};
   }
 }

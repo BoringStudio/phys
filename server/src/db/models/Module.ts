@@ -5,7 +5,7 @@ import {
   Validate,
   IsOptional
 } from 'class-validator';
-import { IsBeforeConstraint, SameExistance, OrExists } from '@/constraints';
+import { IsBefore, SameExistance, OrExists } from '@/constraints';
 
 export class Module {
   public id: number;
@@ -20,12 +20,15 @@ export class ModuleCreationInfo {
   public semester: number;
 
   @IsDateString()
-  @Validate(IsBeforeConstraint, ['end'])
+  @Validate(IsBefore, ['end'])
   public begin: Date;
 
   @Validate(SameExistance, ['begin'])
   @IsDateString()
   public end: Date;
+
+  @IsBoolean()
+  public isActive?: boolean;
 }
 
 export class ModuleEditionInfo {
@@ -35,7 +38,7 @@ export class ModuleEditionInfo {
   @Validate(SameExistance, ['end'])
   @IsOptional()
   @IsDateString()
-  @Validate(IsBeforeConstraint, ['end'])
+  @Validate(IsBefore, ['end'])
   public begin?: Date;
 
   @Validate(SameExistance, ['begin'])

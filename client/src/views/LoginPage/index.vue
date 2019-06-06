@@ -3,7 +3,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { AuthData } from '@/model/User';
+import { AuthData } from '@/models/managers/User';
 
 @Component
 export default class LoginPage extends Vue {

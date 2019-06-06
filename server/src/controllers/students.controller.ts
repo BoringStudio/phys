@@ -8,56 +8,101 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  UseBefore
+  QueryParams,
+  Params
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { StudentsService } from '@/db/services/students.service';
 import { StudentCreationInfo, StudentEditionInfo } from '@/db/models/Student';
-import { AlreadyExistsError } from '../errors';
-import { AuthMiddleware } from '@/middlewares/auth.middleware';
+import { StudentInfosService } from '@/db/services/studentInfos.service';
+import {
+  simpleErrorHandler,
+  alreadyExistsErrorHandler,
+  haveDependenciesErrorHandler
+} from '../errors';
+
+import { PaginationQueryParams, SearchParams } from '@/pagination';
+import { IsInt } from 'class-validator';
+
+class StudentInfoParameters {
+  @IsInt()
+  public id: number;
+
+  @IsInt()
+  public semesterId: number;
+}
 
 @JsonController()
-@UseBefore(AuthMiddleware)
 export class StudentsController {
   private students: StudentsService = injector.get(StudentsService);
+  private studentInfos: StudentInfosService = injector.get(StudentInfosService);
 
   @Get('/students')
-  public async getAll() {
-    return await this.students.getAll();
+  public async getAll(@QueryParams() { page, perPage }: PaginationQueryParams) {
+    if (page == null || perPage == null) {
+      return await this.students.getAll().catch(simpleErrorHandler);
+    }
+
+    return await this.students.getPage(perPage, page).catch(simpleErrorHandler);
+  }
+
+  @Get('/students/search')
+  public async search(@QueryParams() { match, limit }: SearchParams) {
+    if (match == null || limit == null || match.length === 0) {
+      return [];
+    }
+
+    let decoded = '';
+
+    try {
+      decoded = decodeURIComponent(match);
+    } catch (e) {
+      return [];
+    }
+
+    return await this.students.search(decoded, limit).catch(simpleErrorHandler);
+  }
+
+  @Get('/students/total')
+  public async getTotalCount() {
+    const { count } = await this.students
+      .getTotalCount()
+      .catch(simpleErrorHandler);
+    return count;
   }
 
   @Get('/student/:id')
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
-    return await this.students.getSingle(id);
+    return await this.students.getSingle(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/student/:id/info/semester/:semesterId')
+  @OnUndefined(NotFoundError)
+  public async getSemesterStudentInfo(@Params() params: StudentInfoParameters) {
+    return await this.studentInfos
+      .getStudentInfo(params.id, params.semesterId)
+      .catch(simpleErrorHandler);
   }
 
   @Post('/student')
-  @OnUndefined(AlreadyExistsError)
   public async create(@Body() data: StudentCreationInfo) {
-    try {
-      const [id] = await this.students.create(data);
-      return id;
-    } catch (e) {
-      return;
-    }
+    const [id] = await this.students
+      .create(data)
+      .catch(alreadyExistsErrorHandler);
+    return id;
   }
 
   @Put('/student')
-  @OnUndefined(AlreadyExistsError)
   public async update(@Body() data: StudentEditionInfo) {
-    try {
-      await this.students.update(data);
-      return {};
-    } catch (e) {
-      return;
-    }
+    await this.students.update(data).catch(alreadyExistsErrorHandler);
+    return {};
   }
 
   @Delete('/student/:id')
   public async remove(@Param('id') id: any) {
-    await this.students.remove(id);
+    await this.students.remove(id).catch(haveDependenciesErrorHandler);
     return {};
   }
 }

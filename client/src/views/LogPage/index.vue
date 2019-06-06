@@ -2,112 +2,219 @@
 <style lang="scss" src="./style.scss"></style>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Mixins } from 'vue-property-decorator';
 import moment from 'moment-timezone';
+import _ from 'underscore';
 
-import StudentModal from '@/components/StudentModal.vue';
+import Page from '@/components/Page.vue';
+import GeneralModal from '@/components/GeneralModal.vue';
+import LessonStudentModal from '@/components/LessonStudentModal.vue';
+import HasDatepickerMixin from '@/components/HasDatepickerMixin.vue';
 
-import { Module, MarkType } from '@/model/Module';
-import { Student, HealthGroup } from '@/model/Student';
-import { Test } from '@/model/Test';
+import { Student } from '@/models/managers/Student';
+import { Test } from '@/models/managers/Test';
+import { Lesson, LessonFullInfo } from '@/models/managers/Lesson';
+import { Classroom } from '@/models/managers/Classroom';
+import { Discipline } from '@/models/managers/Discipline';
+import { Semester } from '@/models/managers/Semester';
+import { Group } from '@/models/managers/Group';
+import { Module } from '@/models/managers/Module';
+import { Mark } from '@/models/managers/Mark';
+import { StudentVisit } from '@/models/managers/StudentVisit';
+import { StudentInfo } from '@/models/managers/StudentInfo';
 
-type State = 'schedule' | 'tests' | 'info';
-type StudentState = 'add' | 'edit';
+import {
+  getLessonNumberName,
+  getDayName,
+  insertOrUpdate,
+  deleteByIndex,
+  findById,
+  findIndexById
+} from '@/models/Stuff';
+
+type State = 'schedule' | 'tests' | 'infos';
+
+interface ModuleWeek {
+  number: number;
+  date: Date;
+}
+
+type StudentVisitOptional = StudentVisit | null;
 
 @Component({
   components: {
-    StudentModal
+    Page,
+    GeneralModal,
+    LessonStudentModal
   }
 })
-export default class LogPage extends Vue {
-  private studentModal!: StudentModal;
+export default class LogPage extends Mixins(HasDatepickerMixin) {
+  private lessonStudentModal!: LessonStudentModal;
+  private receiptDateModal!: GeneralModal;
+  private examDateModal!: GeneralModal;
 
   private filterString: string = '';
 
-  private moduleWeeks: Array<{ dates: Date[] }> = [];
+  private uniqueVisitsKey: number = 0;
+  private state: State = 'schedule';
 
-  private tests: Test[] = [];
+  private lesson: Lesson = new Lesson();
+  private classroom: Classroom = new Classroom();
+  private discipline: Discipline = new Discipline();
+  private semester: Semester = new Semester();
   private modules: Module[] = [];
   private students: Student[] = [];
+  private groups: Group[] = [];
 
-  private markOptions = [
-    { value: null, text: '' },
-    { value: MarkType.Schedule, text: 'V' },
-    { value: MarkType.OutOfSchedule, text: 'W' },
-    { value: MarkType.Skip, text: 'Н' },
-    { value: MarkType.TrustedSkip, text: 'У' },
-    { value: MarkType.Ill, text: 'Б' },
-    { value: MarkType.Retrieval, text: 'О' }
-  ];
+  private marks: Mark[] = [];
 
-  private state: State = 'schedule';
-  private studentState: StudentState = 'edit';
+  private studentVisits: StudentVisit[] = [];
+  private studentInfos: StudentInfo[] = [];
 
-  private mounted() {
-    this.studentModal = this.$refs['student-modal'] as StudentModal;
-    this.studentModal.$on('submit', (student: Student) => {
-      if (this.studentState === 'add') {
-        this.students.push(student);
-        this.fillStudent(student);
+  private moduleWeeks: ModuleWeek[][] = [];
+  private weekToModule: Map<number, number> = new Map();
+  private moduleVisits: StudentVisitOptional[][][] = [];
+
+  private apiThrottler = _.throttle((cb: () => any) => cb(), 500, {
+    leading: false
+  });
+
+  private created() {
+    this.$bus.on(
+      'lesson_student_added',
+      async (entry: { lessonId: number; studentId: number }) => {
+        if (!this.isLessonInitialized || this.lesson.id !== entry.lessonId) {
+          return;
+        }
+
+        const student = await this.$state.studentManager.fetchOne(
+          entry.studentId
+        );
+
+        const groupIndex = findIndexById(this.groups, student.group);
+        if (groupIndex < 0) {
+          insertOrUpdate(
+            this.groups,
+            await this.$state.groupManager.fetchOne(student.group)
+          );
+        }
+
+        insertOrUpdate(this.students, student);
+
+        this.fillStudentVisits();
       }
+    );
 
-      this.studentModal.setVisible(false);
+    this.$bus.on(
+      'lesson_student_removed',
+      (entry: { lessonId: number; studentId: number }) => {
+        if (!this.isLessonInitialized || this.lesson.id !== entry.lessonId) {
+          return;
+        }
+
+        deleteByIndex(this.students, entry.studentId);
+
+        this.fillStudentVisits();
+      }
+    );
+
+    this.$bus.on('student_visit_updated', (visit: StudentVisit) => {
+      insertOrUpdate(this.studentVisits, visit);
     });
 
-    const septemberBegin = moment('11.02.2019', 'DD.MM.YYYY');
-
-    let week = 0;
-    for (let i = 0; i < 3; ++i) {
-      const dates: Date[] = [];
-
-      let j = week;
-      for (; j < week + 6 && j < 15; ++j) {
-        dates.push(
-          new Date(
-            septemberBegin
-              .clone()
-              .add(j, 'weeks')
-              .toDate()
-          )
+    this.$bus.on(
+      ['student_visit_created', 'student_visit_removed'],
+      async () => {
+        this.studentVisits = await this.$state.lessonManager.fetchVisits(
+          this.lesson.id
         );
       }
+    );
 
-      const newModule = new Module(i + 1);
-      newModule.marks = Array.apply(null, Array(j - week)).map(() => ({
-        value: null
-      }));
-      this.modules.push(newModule);
+    this.$bus.on(
+      ['student_info_updated', 'student_info_created'],
+      (info: StudentInfo) => {
+        insertOrUpdate(this.studentInfos, info);
+      }
+    );
 
-      this.moduleWeeks.push({ dates });
+    this.$bus.on('student_info_removed', async (id) => {
+      deleteByIndex(this.studentInfos, id);
+    });
+  }
 
-      week += 6;
-    }
+  private async beforeMount() {
+    this.reset();
 
-    for (let i = 0; i < 10; ++i) {
-      const sampleStudent = new Student(
-        'Иванов',
-        'Иван',
-        'Иванович',
-        `ИВБО-${Math.floor(Math.random() * 20 + 1)}-16`,
-        HealthGroup.First
+    const lessonId = parseInt(this.$route.params.id, 10) || 0;
+
+    try {
+      const [info, marks] = await Promise.all([
+        this.$state.lessonManager.fetchFullInfo(lessonId),
+        this.$state.markManager.fetchAll()
+      ]);
+
+      this.classroom = info.classroom;
+      this.discipline = info.discipline;
+      this.semester = info.semester;
+      this.modules = info.modules;
+      this.students = info.students;
+      this.groups = info.groups;
+
+      this.lesson = info.lesson;
+
+      this.marks = marks;
+
+      this.studentVisits = await this.$state.lessonManager.fetchVisits(
+        this.lesson.id
       );
 
-      this.fillStudent(sampleStudent);
+      this.fillWeeks();
+      this.fillStudentVisits();
 
-      this.students.push(sampleStudent);
+      this.studentInfos = await this.$state.lessonManager.fetchInfos(
+        this.lesson.id
+      );
+    } catch (e) {
+      this.$router.back();
+      this.$notify({
+        title: 'Не удалось открыть журнал',
+        type: 'error'
+      });
+      return;
     }
   }
 
-  private fillStudent(student: Student) {
-    student.modules = this.modules.map((m) => {
-      const res = new Module(m.position);
-      res.marks = m.marks.map((v) => ({ value: v.value }));
-      return res;
-    });
+  private mounted() {
+    this.lessonStudentModal = this.$refs[
+      'lesson-student-modal'
+    ] as LessonStudentModal;
+    this.lessonStudentModal.$on(
+      'submit',
+      async ({ student }: { student: number }) => {
+        this.lessonStudentModal.setInProcess(true);
 
-    student.testMarks = Array.apply(null, Array(this.tests.length)).map(() => ({
-      value: null
-    }));
+        try {
+          await this.$state.lessonManager.addStudent(this.lesson.id, student);
+          this.lessonStudentModal.setVisible(false);
+        } catch (e) {
+          this.$notify({
+            title: 'Невозможно добавить студента',
+            type: 'error'
+          });
+          this.lessonStudentModal.setInProcess(false);
+        }
+      }
+    );
+
+    this.receiptDateModal = this.$refs['receipt-date-modal'] as GeneralModal;
+    this.examDateModal = this.$refs['exam-date-modal'] as GeneralModal;
+  }
+
+  private addStudent() {
+    this.lessonStudentModal.show({
+      student: -1
+    });
   }
 
   private get filteredStudents() {
@@ -116,11 +223,13 @@ export default class LogPage extends Vue {
         return true;
       }
 
+      const group = this.getStudentGroup(s);
+
       const words = this.filterString.toLowerCase().split(' ');
       return words.every(
         (w) =>
           s.fullName.toLowerCase().includes(w) ||
-          s.group.toLowerCase().includes(w)
+          (group != null && group.name.toLowerCase().includes(w))
       );
 
       return false;
@@ -133,24 +242,310 @@ export default class LogPage extends Vue {
     };
   }
 
-  private addStudent() {
-    this.studentState = 'add';
-    this.studentModal.show(new Student());
+  private getStudentGroup(student: Student) {
+    return findById(this.groups, student.group);
   }
 
-  private editStudent(student: Student) {
-    this.studentState = 'edit';
-    this.studentModal.show(student);
+  private reset() {
+    this.lesson = new Lesson();
+    this.classroom = new Classroom();
+    this.discipline = new Discipline();
+    this.semester = new Semester();
+    this.students = [];
+    this.groups = [];
+
+    this.marks = [];
+    this.studentVisits = [];
+    this.studentInfos = [];
+
+    this.moduleWeeks = [];
+    this.moduleVisits = [];
   }
 
-  private getLessonInstanceTitle() {
-    return `${
-      this.$state.currentInstance.lesson
-        ? this.$state.currentInstance.lesson.name
-        : ''
-    } ${this.$state.currentInstance.place}, ${
-      this.$state.currentInstance.type
-    }`;
+  private fillWeeks() {
+    const weeks = this.lessonDates;
+
+    this.moduleWeeks = this.modules.map(() => []);
+    this.weekToModule = new Map();
+
+    let w = 0;
+    for (let m = 0; m < this.modules.length; ++m) {
+      // Offset weeks which are not in range
+      while (
+        w < weeks.length &&
+        (weeks[w] < this.modules[m].begin || weeks[w] > this.modules[m].end)
+      ) {
+        ++w;
+      }
+
+      // Add weeks which are in range
+      for (
+        ;
+        w < weeks.length &&
+        weeks[w] >= this.modules[m].begin &&
+        weeks[w] <= this.modules[m].end;
+        ++w
+      ) {
+        this.moduleWeeks[m].push({
+          number: w,
+          date: weeks[w]
+        });
+        this.weekToModule.set(w, m);
+      }
+    }
+  }
+
+  private fillStudentVisits() {
+    const lessonDates = this.lessonDates;
+
+    // Fill student visits
+    this.moduleVisits = this.students.map((student) => {
+      const moduleVisits: StudentVisitOptional[][] = this.moduleWeeks.map(
+        (weeks) => weeks.map(() => null)
+      );
+
+      this.studentVisits
+        .filter((v) => v.student === student.id)
+        .forEach((v) => {
+          if (v.week < lessonDates.length) {
+            // Find module
+            const moduleIndex = this.weekToModule.get(v.week);
+            if (moduleIndex == null) {
+              return;
+            }
+
+            // Find Index
+            const weekIndex = this.moduleWeeks[moduleIndex].findIndex(
+              (w) => w.number === v.week
+            );
+            if (weekIndex == null) {
+              return;
+            }
+
+            // Set visit to week in module
+            moduleVisits[moduleIndex][weekIndex] = v;
+          }
+        });
+
+      return moduleVisits;
+    });
+  }
+
+  private getStudentVisits(student: Student) {
+    const studentIndex = this.students.findIndex((s) => s.id === student.id);
+    if (studentIndex < 0 || studentIndex >= this.moduleVisits.length) {
+      return [];
+    }
+
+    return this.moduleVisits[studentIndex];
+  }
+
+  private getStudentInfo(student: Student) {
+    const infoIndex = this.studentInfos.findIndex(
+      (info) => info.student === student.id
+    );
+
+    if (infoIndex < 0) {
+      const info = new StudentInfo({
+        student: student.id,
+        semester: this.semester.id
+      });
+      this.studentInfos.push(info);
+      return info;
+    }
+
+    return this.studentInfos[infoIndex];
+  }
+
+  private async onMarkChanged(
+    student: Student,
+    moduleIndex: number,
+    visitIndex: number,
+    value: number
+  ) {
+    const studentVisits = this.getStudentVisits(student);
+    const visit = studentVisits[moduleIndex][visitIndex];
+
+    if (value == null) {
+      if (visit == null) {
+        return;
+      }
+
+      try {
+        await this.$state.studentVisitManager.remove(visit.id);
+        this.updateVisit(student, moduleIndex, visitIndex, null);
+      } catch (e) {
+        this.$notify({
+          title: 'Невозможно удалить посещение',
+          type: 'error'
+        });
+        this.updateVisit(student, moduleIndex, visitIndex, visit);
+      }
+      return;
+    }
+
+    const create = visit == null;
+
+    try {
+      let res: StudentVisit = new StudentVisit();
+      if (create) {
+        res = await this.$state.studentVisitManager.create({
+          mark: value,
+          week: this.moduleWeeks[moduleIndex][visitIndex].number,
+          lesson: this.lesson.id,
+          student: student.id
+        });
+      } else {
+        res = await this.$state.studentVisitManager.update({
+          ...visit!,
+          mark: value
+        });
+      }
+
+      this.updateVisit(student, moduleIndex, visitIndex, res);
+    } catch (e) {
+      this.$notify({
+        title: `Невозможно ${create ? 'создать' : 'изменить'} посещение`,
+        type: 'error'
+      });
+      this.updateVisit(student, moduleIndex, visitIndex, visit);
+    }
+  }
+
+  private updateVisit(
+    student: Student,
+    moduleIndex: number,
+    visitIndex: number,
+    value: StudentVisit | null
+  ) {
+    const studentIndex = this.students.findIndex((s) => s.id === student.id);
+
+    const moduleVisits = this.moduleVisits[studentIndex];
+    moduleVisits[moduleIndex][visitIndex] = value;
+
+    Vue.set(this.moduleVisits, studentIndex, moduleVisits);
+
+    ++this.uniqueVisitsKey;
+  }
+
+  private getModuleSumm(visits: Array<StudentVisit | null>) {
+    return visits.reduce((sum, visit) => {
+      if (visit == null) {
+        return sum;
+      }
+
+      const mark = findById(this.marks, visit.mark);
+      return sum + ((mark && mark.weight) || 0);
+    }, 0);
+  }
+
+  private getStudentSumm(student: Student) {
+    const studentVisits = this.getStudentVisits(student);
+    return studentVisits.reduce((sum, m) => sum + this.getModuleSumm(m), 0);
+  }
+
+  private editReceiptDate(info: StudentInfo) {
+    this.receiptDateModal.show(info);
+  }
+
+  private editExamDate(info: StudentInfo) {
+    this.examDateModal.show(info);
+  }
+
+  private formatDate(date: Date) {
+    return moment(date).format('DD.MM.YYYY');
+  }
+
+  private async updateInfo(
+    info: StudentInfo,
+    fromModal: boolean = true,
+    property?: keyof Pick<
+      StudentInfo,
+      Exclude<keyof StudentInfo, 'id' | 'summ'>
+    >
+  ) {
+    this.apiThrottler(async () => {
+      console.log('temp');
+
+      if (fromModal) {
+        this.receiptDateModal.setInProcess(true);
+        this.examDateModal.setInProcess(true);
+      }
+
+      const infoIndex = this.studentInfos.findIndex(
+        (i) => i.student === info.student
+      );
+
+      const create = info.id < 0;
+
+      try {
+        let res: StudentInfo;
+        if (create) {
+          res = await this.$state.studentInfoManager.create(info);
+        } else {
+          res = await this.$state.studentInfoManager.update(info, property);
+        }
+
+        Vue.set(this.studentInfos, infoIndex, res);
+
+        if (fromModal) {
+          this.receiptDateModal.setVisible(false);
+          this.examDateModal.setVisible(false);
+        }
+      } catch (e) {
+        this.$notify({
+          title: 'Невозможно изменить информацию о студенте',
+          type: 'error'
+        });
+
+        if (fromModal) {
+          this.receiptDateModal.setInProcess(false);
+          this.examDateModal.setInProcess(false);
+        }
+      }
+    });
+  }
+
+  private get lessonDates() {
+    const weekBegin = moment(this.semester.begin).startOf('week');
+    const end = moment(this.semester.end);
+
+    const weeks: Date[] = [];
+
+    const current = weekBegin.add(this.lesson.day, 'days');
+    while (current < end) {
+      weeks.push(current.toDate());
+      current.add(1, 'week');
+    }
+
+    return weeks;
+  }
+
+  private get lessonTitle() {
+    if (!this.isLessonInitialized) {
+      return '';
+    }
+
+    return `${getDayName(this.lesson.day)}, ${getLessonNumberName(
+      this.lesson.number
+    )}, ${this.classroom.name}, ${this.discipline.name}`;
+  }
+
+  private get isLessonInitialized() {
+    return this.lesson.id > 0;
+  }
+
+  private get markOptions() {
+    const options: Array<{ value: number | null; text: string }> = [
+      { value: null, text: '' }
+    ];
+
+    return options.concat(
+      this.marks.map((m) => ({
+        value: m.id,
+        text: m.symbol
+      }))
+    );
   }
 }
 </script>

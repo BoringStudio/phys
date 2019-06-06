@@ -2,6 +2,8 @@ import knex from 'knex';
 import { Connection } from '../connection';
 import { SemesterCreationInfo, SemesterEditionInfo } from '../models/Semester';
 
+import { modulesTable } from './modules.service';
+
 const semestersTable = 'semesters';
 
 export class SemestersService {
@@ -24,6 +26,13 @@ export class SemestersService {
         id
       })
       .first();
+  }
+
+  public getModules(id: number) {
+    return this.db(modulesTable)
+      .select('*')
+      .where('semester', id)
+      .orderBy('begin', 'asc');
   }
 
   public create(data: SemesterCreationInfo) {

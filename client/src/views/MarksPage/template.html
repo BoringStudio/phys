@@ -1,0 +1,13 @@
+<page title="Оценки">
+  <template v-slot:actions>
+    <b-button variant="success" @click="addMark">
+      <span>Добавить</span>
+    </b-button>
+  </template>
+
+  <cards-list :items="marks" editable @edit="editMark" @remove="removeMark">
+    <template v-slot="{ item }">{{ item.name }}</template>
+  </cards-list>
+
+  <mark-modal ref="mark-modal"></mark-modal>
+</page>
