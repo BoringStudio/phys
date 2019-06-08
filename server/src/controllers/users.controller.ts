@@ -5,19 +5,28 @@ import {
   Get,
   Param,
   OnUndefined,
-  NotFoundError
+  NotFoundError,
+  Put,
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { UsersService } from '@/db/services/users.service';
-import { User, UserCreationInfo } from '@/db/models/User';
-import { simpleErrorHandler, alreadyExistsErrorHandler } from '@/errors';
+import { User, UserCreationInfo, UserEditionInfo } from '@/db/models/User';
+import {
+  simpleErrorHandler,
+  alreadyExistsErrorHandler,
+  haveDependenciesErrorHandler
+} from '@/errors';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 @JsonController()
 export class UsersController {
   private users: UsersService = injector.get(UsersService);
 
   @Get('/users')
+  @UseBefore(RestrictMiddleware)
   public async getAll() {
     const users = await this.users.getAll().catch(simpleErrorHandler);
 
@@ -28,6 +37,7 @@ export class UsersController {
   }
 
   @Get('/user/:id')
+  @UseBefore(RestrictMiddleware)
   @OnUndefined(NotFoundError)
   public async getSingle(@Param('id') id: any) {
     const user = await this.users.getSingle(id).catch(simpleErrorHandler);
@@ -41,9 +51,23 @@ export class UsersController {
   }
 
   @Post('/user')
+  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: UserCreationInfo) {
-    const user = await this.users.create(data).catch(alreadyExistsErrorHandler);
-    const { password, ...res } = user;
-    return res;
+    const [id] = await this.users.create(data).catch(alreadyExistsErrorHandler);
+    return id;
+  }
+
+  @Put('/user')
+  @UseBefore(RestrictMiddleware)
+  public async update(@Body() data: UserEditionInfo) {
+    await this.users.update(data).catch(simpleErrorHandler);
+    return {};
+  }
+
+  @Delete('/user/:id')
+  @UseBefore(RestrictMiddleware)
+  public async remove(@Param('id') id: any) {
+    await this.users.remove(id).catch(haveDependenciesErrorHandler);
+    return {};
   }
 }

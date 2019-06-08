@@ -1,6 +1,6 @@
 import knex from 'knex';
 import { Connection } from '../connection';
-import { UserCreationInfo } from '../models/User';
+import { UserCreationInfo, UserEditionInfo } from '../models/User';
 
 const usersTable = 'users';
 
@@ -38,11 +38,29 @@ export class UsersService {
     return this.db(usersTable)
       .insert({
         login: data.login,
-        password: this.db.raw("crypt(?, gen_salt('bf'))", [data.password]),
+        password: this.db.raw(`crypt(?, gen_salt('bf'))`, [data.password]),
         surname: data.surname,
         name: data.name,
         middlename: data.middlename
       })
       .returning('id');
+  }
+
+  public update(data: UserEditionInfo) {
+    return this.db(usersTable).update({
+      login: data.login,
+      password: data.password
+        ? this.db.raw(`crypt(?, gen_salt('bf'))`, [data.password])
+        : undefined,
+      surname: data.surname,
+      name: data.name,
+      middlename: data.middlename
+    });
+  }
+
+  public remove(id: number) {
+    return this.db(usersTable)
+      .where('id', id)
+      .delete();
   }
 }

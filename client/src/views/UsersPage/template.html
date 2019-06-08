@@ -1,0 +1,15 @@
+<page title="Пользователи">
+  <template v-slot:actions>
+    <b-button variant="success" @click="addUser">
+      <span>Добавить</span>
+    </b-button>
+  </template>
+
+  <cards-list :items="users" editable @edit="editUser" @remove="removeUser">
+    <template v-slot="{ item }">
+      {{ item.fullName }}
+    </template>
+  </cards-list>
+
+  <user-modal ref="user-modal" @submit="onSubmit"></user-modal>
+</page>

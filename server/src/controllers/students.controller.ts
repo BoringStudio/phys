@@ -9,7 +9,8 @@ import {
   NotFoundError,
   Delete,
   QueryParams,
-  Params
+  Params,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -24,6 +25,7 @@ import {
 
 import { PaginationQueryParams, SearchParams } from '@/pagination';
 import { IsInt } from 'class-validator';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 class StudentInfoParameters {
   @IsInt()
@@ -101,6 +103,7 @@ export class StudentsController {
   }
 
   @Delete('/student/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.students.remove(id).catch(haveDependenciesErrorHandler);
     return {};

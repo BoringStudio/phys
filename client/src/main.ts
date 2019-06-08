@@ -26,10 +26,17 @@ import moment from 'moment-timezone';
 moment.tz.setDefault();
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faEdit, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEdit,
+  faPlus,
+  faTimes,
+  faEye,
+  faEyeSlash,
+  faRedo
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-library.add(faEdit, faPlus, faTimes);
+library.add(faEdit, faPlus, faTimes, faEye, faEyeSlash, faRedo);
 Vue.component('a-icon', FontAwesomeIcon);
 
 Vue.config.productionTip = false;

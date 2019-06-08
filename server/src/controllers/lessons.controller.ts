@@ -9,7 +9,8 @@ import {
   NotFoundError,
   Delete,
   Ctx,
-  Params
+  Params,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -35,6 +36,7 @@ import { DisciplinesService } from '@/db/services/disciplines.service';
 import { SemestersService } from '@/db/services/semesters.service';
 import { StudentInfosService } from '@/db/services/studentInfos.service';
 import { StudentVisitsService } from '@/db/services/studentVisits.service';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 class StudentEntryParameters {
   @IsInt()
@@ -175,6 +177,7 @@ export class LessonsController {
   }
 
   @Delete('/lesson/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.lessons.remove(id).catch(haveDependenciesErrorHandler);
     return {};

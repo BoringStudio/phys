@@ -7,7 +7,8 @@ import {
   Get,
   OnUndefined,
   NotFoundError,
-  Delete
+  Delete,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -19,6 +20,7 @@ import {
   alreadyExistsErrorHandler,
   haveDependenciesErrorHandler
 } from '../errors';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 @JsonController()
 export class TestsController {
@@ -36,6 +38,7 @@ export class TestsController {
   }
 
   @Post('/test')
+  @UseBefore(RestrictMiddleware)
   @OnUndefined(AlreadyExistsError)
   public async create(@Body() data: TestCreationInfo) {
     const [id] = await this.tests.create(data).catch(alreadyExistsErrorHandler);
@@ -43,12 +46,14 @@ export class TestsController {
   }
 
   @Put('/test')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: TestEditionInfo) {
     await this.tests.update(data).catch(alreadyExistsErrorHandler);
     return {};
   }
 
   @Delete('/test/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.tests.remove(id).catch(haveDependenciesErrorHandler);
     return {};

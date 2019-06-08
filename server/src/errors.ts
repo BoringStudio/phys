@@ -33,3 +33,11 @@ export class HaveDependenciesError extends HttpError {
 export const haveDependenciesErrorHandler = createErrorHandler(
   new HaveDependenciesError()
 );
+
+export class NotAllowedError extends HttpError {
+  constructor() {
+    super(400, 'not alowed');
+  }
+}
+
+export const notAllowedErrorHandler = createErrorHandler(new NotAllowedError());

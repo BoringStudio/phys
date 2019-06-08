@@ -10,6 +10,7 @@ import { LessonEvent } from './managers/Lesson';
 import { ParameterEvent } from './managers/Parameters';
 import { StudentVisitEvent } from './managers/StudentVisit';
 import { StudentInfoEvent } from './managers/StudentInfo';
+import { UserEvent } from './managers/User';
 
 type BusEvent =
   | ClassroomEvent
@@ -23,7 +24,8 @@ type BusEvent =
   | LessonEvent
   | ParameterEvent
   | StudentVisitEvent
-  | StudentInfoEvent;
+  | StudentInfoEvent
+  | UserEvent;
 
 type BusEventHandler = (data?: any) => void;
 
