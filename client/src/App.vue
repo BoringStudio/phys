@@ -33,10 +33,19 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import moment from 'moment-timezone';
+import { User } from './models/managers/User';
 
 @Component
 export default class App extends Vue {
   private now: Date = new Date();
+
+  private fullName: string = '';
+
+  private created() {
+    this.$bus.on('user_authorized', (user: User) => {
+      this.fullName = user.fullName;
+    });
+  }
 
   private mounted() {
     this.updateDate();
@@ -74,14 +83,6 @@ export default class App extends Vue {
     });
   }
 
-  private get fullName() {
-    if (!this.$state.userManager.authorized) {
-      return '';
-    }
-
-    return this.$state.userManager.currentUser!.fullName;
-  }
-
   private get pages() {
     return [
       {
@@ -115,6 +116,10 @@ export default class App extends Vue {
       {
         page: 'semesters',
         title: 'Семестры'
+      },
+      {
+        page: 'users',
+        title: 'Пользователи'
       }
     ];
   }

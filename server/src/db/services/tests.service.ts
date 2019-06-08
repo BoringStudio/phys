@@ -27,8 +27,6 @@ export class TestsService {
   }
 
   public create(data: TestCreationInfo) {
-    console.log(data);
-
     return this.db(testsTable)
       .insert({
         name: data.name,
@@ -61,10 +59,6 @@ export class TestsService {
   }
 
   private prepareArray(array: number[]) {
-    console.log(
-      `ARRAY[${Array.from(Array(array.length), () => '?::numeric').join(',')}]`
-    );
-
     return this.db.raw(
       `ARRAY[${Array.from(Array(array.length), () => '?::numeric').join(',')}]`,
       array

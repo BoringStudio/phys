@@ -6,7 +6,7 @@ export class Student {
   public id: number;
   public surname: string;
   public name: string;
-  public middlename?: string;
+  public middlename: string;
   public gender: StudentGender;
   public group: number;
 }

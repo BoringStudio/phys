@@ -5,13 +5,19 @@ import {
   Get,
   Param,
   OnUndefined,
-  NotFoundError
+  NotFoundError,
+  Put,
+  Delete
 } from 'routing-controllers';
 
 import { injector } from '@/server';
 import { UsersService } from '@/db/services/users.service';
-import { User, UserCreationInfo } from '@/db/models/User';
-import { simpleErrorHandler, alreadyExistsErrorHandler } from '@/errors';
+import { User, UserCreationInfo, UserEditionInfo } from '@/db/models/User';
+import {
+  simpleErrorHandler,
+  alreadyExistsErrorHandler,
+  haveDependenciesErrorHandler
+} from '@/errors';
 
 @JsonController()
 export class UsersController {
@@ -42,8 +48,19 @@ export class UsersController {
 
   @Post('/user')
   public async create(@Body() data: UserCreationInfo) {
-    const user = await this.users.create(data).catch(alreadyExistsErrorHandler);
-    const { password, ...res } = user;
-    return res;
+    const [id] = await this.users.create(data).catch(alreadyExistsErrorHandler);
+    return id;
+  }
+
+  @Put('/user')
+  public async update(@Body() data: UserEditionInfo) {
+    await this.users.update(data).catch(simpleErrorHandler);
+    return {};
+  }
+
+  @Delete('/user/:id')
+  public async remove(@Param('id') id: any) {
+    await this.users.remove(id).catch(haveDependenciesErrorHandler);
+    return {};
   }
 }

@@ -1,4 +1,4 @@
-import { Length, IsOptional, IsInt } from 'class-validator';
+import { Length, IsOptional, IsInt, IsBoolean } from 'class-validator';
 
 export class User {
   public id: number;
@@ -6,7 +6,7 @@ export class User {
   public password: string;
   public surname: string;
   public name: string;
-  public middlename?: string;
+  public middlename: string;
   public fullAccess: boolean;
 }
 
@@ -23,9 +23,11 @@ export class UserCreationInfo {
   @Length(2, 50)
   public name: string;
 
-  @IsOptional()
-  @Length(6, 50)
-  public middlename?: string | null;
+  @Length(0, 50)
+  public middlename: string;
+
+  @IsBoolean()
+  public fullAccess: boolean;
 }
 
 export class UserEditionInfo {
@@ -49,6 +51,10 @@ export class UserEditionInfo {
   public name?: string;
 
   @IsOptional()
-  @Length(6, 50)
-  public middlename?: string | null;
+  @Length(0, 50)
+  public middlename?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  public fullAccess?: boolean;
 }

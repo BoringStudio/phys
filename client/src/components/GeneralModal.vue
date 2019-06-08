@@ -25,7 +25,7 @@ import { Component, Prop, Vue, Mixins } from 'vue-property-decorator';
 
 @Component
 export class ModalMixin extends Vue {
-  private modal!: GeneralModal;
+  public modal!: GeneralModal;
 
   public setVisible(visible: boolean) {
     this.modal.setVisible(visible);
@@ -49,9 +49,10 @@ export class ModalMixin extends Vue {
 
 @Component
 export default class GeneralModal extends Vue {
+  public data: object | null = null;
+
   private visible: boolean = false;
   private inProcess: boolean = false;
-  private data: object | null = null;
 
   @Prop({
     type: String,

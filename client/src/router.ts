@@ -11,6 +11,7 @@ import ClassroomsPage from '@/views/ClassroomsPage/index.vue';
 import DisciplinesPage from '@/views/DisciplinesPage/index.vue';
 import MarksPage from '@/views/MarksPage/index.vue';
 import SemestersPage from '@/views/SemestersPage/index.vue';
+import UsersPage from '@/views/UsersPage/index.vue';
 
 import state from '@/models/State';
 
@@ -25,22 +26,34 @@ const router = new Router({
     {
       path: '/',
       name: 'main',
-      component: TimetablePage
+      component: TimetablePage,
+      meta: {
+        teacherVisible: true
+      }
     },
     {
       path: '/students',
       name: 'students',
-      component: StudentsPage
+      component: StudentsPage,
+      meta: {
+        teacherVisible: true
+      }
     },
     {
       path: '/groups',
       name: 'groups',
-      component: GroupsPage
+      component: GroupsPage,
+      meta: {
+        teacherVisible: true
+      }
     },
     {
       path: '/log/:id',
       name: 'log',
-      component: LogPage
+      component: LogPage,
+      meta: {
+        teacherVisible: true
+      }
     },
     {
       path: '/tests',
@@ -53,7 +66,7 @@ const router = new Router({
       component: DisciplinesPage
     },
     {
-      path: '/makrs',
+      path: '/marks',
       name: 'marks',
       component: MarksPage
     },
@@ -68,10 +81,16 @@ const router = new Router({
       component: SemestersPage
     },
     {
+      path: '/users',
+      name: 'users',
+      component: UsersPage
+    },
+    {
       path: '/login',
       name: 'login',
       component: loginPage,
       meta: {
+        public: true,
         noSidebar: true
       }
     }
@@ -79,17 +98,12 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if (
-    (to.name && ['login'].includes(to.name)) ||
-    state.userManager.authorized
-  ) {
+  if (to.meta.public || state.userManager.authorized) {
     next();
     return;
   }
 
-  next(false);
-
-  router.replace({
+  next({
     name: 'login',
     params: to.name
       ? {
