@@ -1,9 +1,17 @@
-import { JsonController, Body, Param, Put, Get } from 'routing-controllers';
+import {
+  JsonController,
+  Body,
+  Param,
+  Put,
+  Get,
+  UseBefore
+} from 'routing-controllers';
 
 import { injector } from '@/server';
 import { ParametersService } from '@/db/services/parameters.service';
 import { ParameterEditionInfo } from '@/db/models/Parameter';
 import { simpleErrorHandler } from '@/errors';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 @JsonController()
 export class ParametersController {
@@ -21,6 +29,7 @@ export class ParametersController {
   }
 
   @Put('/parameter')
+  @UseBefore(RestrictMiddleware)
   public async set(@Body() { parameter, value }: ParameterEditionInfo) {
     await this.parameters.set(parameter, value).catch(simpleErrorHandler);
     return {};

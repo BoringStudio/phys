@@ -8,7 +8,8 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  BadRequestError
+  BadRequestError,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -21,6 +22,7 @@ import {
 } from '@/db/models/Semester';
 import { ModulesService } from '@/db/services/modules.service';
 import { simpleErrorHandler, haveDependenciesErrorHandler } from '@/errors';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 @JsonController()
 export class SemestersController {
@@ -45,6 +47,7 @@ export class SemestersController {
   }
 
   @Post('/semester')
+  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: SemesterWithModulesCreationInfo) {
     if (!checkAllInRange(data, data.modules)) {
       throw new BadRequestError();
@@ -69,6 +72,7 @@ export class SemestersController {
   }
 
   @Put('/semester')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: SemesterWithModulesEditionInfo) {
     try {
       if (!checkAllInRange(data, data.modules)) {
@@ -93,6 +97,7 @@ export class SemestersController {
   }
 
   @Delete('/semester/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.semesters.remove(id).catch(haveDependenciesErrorHandler);
     return {};

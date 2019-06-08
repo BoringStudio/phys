@@ -98,7 +98,16 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.public || state.userManager.authorized) {
+  if (
+    state.userManager.authorized &&
+    !state.userManager.currentUser!.fullAccess &&
+    to.meta.teacherVisible !== true
+  ) {
+    next({
+      name: 'main'
+    });
+    return;
+  } else if (to.meta.public || state.userManager.authorized) {
     next();
     return;
   }

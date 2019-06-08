@@ -9,7 +9,8 @@ import {
   NotFoundError,
   Delete,
   Params,
-  QueryParams
+  QueryParams,
+  UseBefore
 } from 'routing-controllers';
 import { IsInt } from 'class-validator';
 
@@ -27,6 +28,7 @@ import {
   DisciplineTestsInfo
 } from '@/db/models/Discipline';
 import { SearchParams } from '@/pagination';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 class DisciplineTestParameters {
   @IsInt()
@@ -71,6 +73,7 @@ export class DisciplinesController {
   }
 
   @Post('/discipline')
+  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: DisciplineCreationInfo) {
     const [id] = await this.disciplines
       .create(data)
@@ -79,24 +82,28 @@ export class DisciplinesController {
   }
 
   @Put('/discipline')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: DisciplineEditionInfo) {
     await this.disciplines.update(data).catch(alreadyExistsErrorHandler);
     return {};
   }
 
   @Delete('/discipline/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.disciplines.remove(id).catch(haveDependenciesErrorHandler);
     return {};
   }
 
   @Get('/discipline/:id/tests')
+  @UseBefore(RestrictMiddleware)
   public async getTests(@Param('id') id: any) {
     const tests = await this.disciplines.getTests(id).catch(simpleErrorHandler);
     return tests.map((v: { test: number }) => v.test);
   }
 
   @Post('/discipline/:id/test')
+  @UseBefore(RestrictMiddleware)
   public async addTest(@Param('id') id: any, @Body() data: DisciplineTestInfo) {
     await this.disciplines
       .addTest(id, data.testId)
@@ -105,6 +112,7 @@ export class DisciplinesController {
   }
 
   @Put('/discipline/:id/tests')
+  @UseBefore(RestrictMiddleware)
   public async editTests(
     @Param('id') id: any,
     @Body() data: DisciplineTestsInfo
@@ -116,6 +124,7 @@ export class DisciplinesController {
   }
 
   @Delete('/discipline/:id/test/:testId')
+  @UseBefore(RestrictMiddleware)
   public async removeTest(@Params() params: DisciplineTestParameters) {
     await this.disciplines
       .removeTest(params.id, params.testId)

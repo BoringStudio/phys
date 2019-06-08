@@ -84,6 +84,10 @@ const app: Koa = createKoaServer({
   middlewares: [ErrorMiddleware, LoggingMiddleware, AuthMiddleware]
 });
 
+process.on('unhandledRejection', (e) => {
+  // console.error('Rejectable:', e);
+});
+
 app.listen(config.port);
 
 console.log(`Server is running on port ${config.port}`);

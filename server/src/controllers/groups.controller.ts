@@ -8,7 +8,8 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  QueryParams
+  QueryParams,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -21,6 +22,7 @@ import {
 } from '../errors';
 
 import { PaginationQueryParams, SearchParams } from '@/pagination';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 @JsonController()
 export class GroupsController {
@@ -68,6 +70,7 @@ export class GroupsController {
   }
 
   @Post('/group')
+  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: GroupCreationInfo) {
     const [id] = await this.groups
       .create(data)
@@ -76,12 +79,14 @@ export class GroupsController {
   }
 
   @Put('/group')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: GroupEditionInfo) {
     await this.groups.update(data).catch(alreadyExistsErrorHandler);
     return {};
   }
 
   @Delete('/group/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.groups.remove(id).catch(haveDependenciesErrorHandler);
     return {};

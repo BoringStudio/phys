@@ -49,6 +49,11 @@ export default class App extends Vue {
 
   private mounted() {
     this.updateDate();
+
+    this.fullName =
+      (this.$state.userManager.currentUser &&
+        this.$state.userManager.currentUser.fullName) ||
+      '';
   }
 
   private updateDate() {
@@ -83,19 +88,31 @@ export default class App extends Vue {
     });
   }
 
+  private isPageVisible(page: { teacherVisible?: boolean }) {
+    const authorized = this.$state.userManager.authorized;
+    return (
+      authorized &&
+      (this.$state.userManager.currentUser!.fullAccess ||
+        page.teacherVisible === true)
+    );
+  }
+
   private get pages() {
     return [
       {
         page: 'main',
-        title: 'Расписание'
+        title: 'Расписание',
+        teacherVisible: true
       },
       {
         page: 'students',
-        title: 'Список студентов'
+        title: 'Список студентов',
+        teacherVisible: true
       },
       {
         page: 'groups',
-        title: 'Группы'
+        title: 'Группы',
+        teacherVisible: true
       },
       {
         page: 'tests',
@@ -121,7 +138,7 @@ export default class App extends Vue {
         page: 'users',
         title: 'Пользователи'
       }
-    ];
+    ].filter(this.isPageVisible);
   }
 }
 </script>

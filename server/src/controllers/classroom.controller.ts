@@ -8,7 +8,8 @@ import {
   OnUndefined,
   NotFoundError,
   Delete,
-  QueryParams
+  QueryParams,
+  UseBefore
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -23,6 +24,7 @@ import {
   ClassroomEditionInfo
 } from '@/db/models/Classroom';
 import { SearchParams, PaginationQueryParams } from '@/pagination';
+import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 @JsonController()
 export class ClassroomsController {
@@ -72,6 +74,7 @@ export class ClassroomsController {
   }
 
   @Post('/classroom')
+  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: ClassroomCreationInfo) {
     const [id] = await this.classrooms
       .create(data)
@@ -80,12 +83,14 @@ export class ClassroomsController {
   }
 
   @Put('/classroom')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: ClassroomEditionInfo) {
     await this.classrooms.update(data).catch(alreadyExistsErrorHandler);
     return {};
   }
 
   @Delete('/classroom/:id')
+  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.classrooms.remove(id).catch(haveDependenciesErrorHandler);
     return {};
