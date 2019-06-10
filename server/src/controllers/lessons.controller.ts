@@ -24,7 +24,8 @@ import {
 import {
   simpleErrorHandler,
   alreadyExistsErrorHandler,
-  haveDependenciesErrorHandler
+  haveDependenciesErrorHandler,
+  NotAllowedError
 } from '../errors';
 import { ParametersService } from '@/db/services/parameters.service';
 import { ParameterType } from '@/db/models/Parameter';
@@ -67,7 +68,35 @@ export class LessonsController {
     return await this.lessons.getAll().catch(simpleErrorHandler);
   }
 
+  @Get('/lessons/current_semester/user/:id')
+  @OnUndefined(NotAllowedError)
+  public async getTeacherCurrentSemesterLesson(
+    @Ctx() ctx: Context,
+    @Param('id') id: any
+  ) {
+    const user = ctx.state.user as User;
+
+    if (user.fullAccess !== true && user.id !== id) {
+      return;
+    }
+
+    const res = await this.parameters
+      .get(ParameterType.CURRENT_SEMESTER)
+      .catch(simpleErrorHandler);
+
+    if (res == null) {
+      return [];
+    }
+
+    const semesterId = parseInt(res.value, 10);
+
+    return await this.lessons
+      .getTeacherSemesterLessons(id, semesterId)
+      .catch(simpleErrorHandler);
+  }
+
   @Get('/lessons/current_semester')
+  @UseBefore(RestrictMiddleware)
   public async getCurrentSemesterLessons() {
     const res = await this.parameters
       .get(ParameterType.CURRENT_SEMESTER)
@@ -199,6 +228,7 @@ export class LessonsController {
   }
 
   @Put('/lesson')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: LessonEditionInfo) {
     await this.lessons.update(data).catch(alreadyExistsErrorHandler);
     return {};

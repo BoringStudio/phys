@@ -9,6 +9,7 @@ import _ from 'underscore';
 import Page from '@/components/Page.vue';
 import GeneralModal from '@/components/GeneralModal.vue';
 import LessonStudentModal from '@/components/LessonStudentModal.vue';
+import LessonModal from '@/components/LessonModal.vue';
 import HasDatepickerMixin from '@/components/HasDatepickerMixin.vue';
 
 import { Student } from '@/models/managers/Student';
@@ -22,6 +23,7 @@ import { Module } from '@/models/managers/Module';
 import { Mark } from '@/models/managers/Mark';
 import { StudentVisit } from '@/models/managers/StudentVisit';
 import { StudentInfo } from '@/models/managers/StudentInfo';
+import { StudentTestMark } from '@/models/managers/StudentTestMark';
 
 import {
   getLessonNumberName,
@@ -31,7 +33,6 @@ import {
   findById,
   findIndexById
 } from '@/models/Stuff';
-import { StudentTestMark } from '../../models/managers/StudentTestMark';
 
 type State = 'schedule' | 'tests' | 'infos';
 
@@ -46,11 +47,13 @@ type StudentVisitOptional = StudentVisit | null;
   components: {
     Page,
     GeneralModal,
+    LessonModal,
     LessonStudentModal
   }
 })
 export default class LogPage extends Mixins(HasDatepickerMixin) {
   private lessonStudentModal!: LessonStudentModal;
+  private lessonModal!: LessonModal;
   private receiptDateModal!: GeneralModal;
   private examDateModal!: GeneralModal;
 
@@ -79,11 +82,18 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   private weekToModule: Map<number, number> = new Map();
   private moduleVisits: StudentVisitOptional[][][] = [];
 
+  private fullAccess: boolean = false;
+
   private apiThrottler = _.throttle((cb: () => any) => cb(), 500, {
     leading: false
   });
 
   private created() {
+    this.$bus.on('lesson_updated', (lesson: Lesson) => {
+      console.log(lesson);
+      this.lesson = lesson;
+    });
+
     this.$bus.on(
       'lesson_student_added',
       async (entry: { lessonId: number; studentId: number }) => {
@@ -208,35 +218,56 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   }
 
   private mounted() {
+    this.fullAccess =
+      this.$state.userManager.authorized &&
+      this.$state.userManager.currentUser!.fullAccess;
+
     this.lessonStudentModal = this.$refs[
       'lesson-student-modal'
     ] as LessonStudentModal;
-    this.lessonStudentModal.$on(
-      'submit',
-      async ({ student }: { student: number }) => {
-        this.lessonStudentModal.setInProcess(true);
-
-        try {
-          await this.$state.lessonManager.addStudent(this.lesson.id, student);
-          this.lessonStudentModal.setVisible(false);
-        } catch (e) {
-          this.$notify({
-            title: 'Невозможно добавить студента',
-            type: 'error'
-          });
-          this.lessonStudentModal.setInProcess(false);
-        }
-      }
-    );
-
+    this.lessonModal = this.$refs['lesson-modal'] as LessonModal;
     this.receiptDateModal = this.$refs['receipt-date-modal'] as GeneralModal;
     this.examDateModal = this.$refs['exam-date-modal'] as GeneralModal;
+  }
+
+  private editLesson() {
+    this.lessonModal.show(this.lesson);
   }
 
   private addStudent() {
     this.lessonStudentModal.show({
       student: -1
     });
+  }
+
+  private async onSubmitLessonModal(lesson: Lesson) {
+    this.lessonModal.setInProcess(true);
+
+    try {
+      await this.$state.lessonManager.update(lesson);
+      this.lessonModal.setVisible(false);
+    } catch (e) {
+      this.$notify({
+        title: 'Невозможно изменить пару',
+        type: 'error'
+      });
+      this.lessonModal.setInProcess(false);
+    }
+  }
+
+  private async onSubmitLessonStudentModal({ student }: { student: number }) {
+    this.lessonStudentModal.setInProcess(true);
+
+    try {
+      await this.$state.lessonManager.addStudent(this.lesson.id, student);
+      this.lessonStudentModal.setVisible(false);
+    } catch (e) {
+      this.$notify({
+        title: 'Невозможно добавить студента',
+        type: 'error'
+      });
+      this.lessonStudentModal.setInProcess(false);
+    }
   }
 
   private get filteredStudents() {
@@ -454,7 +485,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         (info) => info.student === student.id && info.test === test.id
       );
 
-      if (value.length == 0 && markIndex >= 0) {
+      if (value.length === 0 && markIndex >= 0) {
         const testMark = this.studentTestMarks[markIndex];
         try {
           await this.$state.studentTestMarkManager.remove(testMark.id);
@@ -467,8 +498,6 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
           return;
         }
       }
-
-      
     });
   }
 

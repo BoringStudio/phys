@@ -36,28 +36,28 @@ export class LessonEditionInfo {
   @IsInt()
   public id: number;
 
-  @IsOptional()
+  /*@IsOptional()
   @IsInt()
-  public semester: number;
+  public semester: number;*/
 
   @IsOptional()
   @IsInt()
   public teacher: number;
 
-  @IsOptional()
+  /*@IsOptional()
   @IsInt()
-  public discipline: number;
+  public discipline: number;*/
 
   @IsOptional()
   @IsInt()
   public classroom: number;
 
   @IsOptional()
-  @IsIn([1, 2, 3, 4, 5, 6])
+  @IsIn([0, 1, 2, 3, 4, 5])
   public day: number;
 
   @IsOptional()
-  @IsIn([1, 2, 3, 4, 5, 6])
+  @IsIn([0, 1, 2, 3, 4, 5])
   public number: number;
 }
 

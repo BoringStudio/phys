@@ -29,6 +29,16 @@ export class LessonsService {
       .orderBy('id');
   }
 
+  public getTeacherSemesterLessons(teacherId: number, semesterId: number) {
+    return this.db(lessonsTable)
+      .select('*')
+      .where({
+        semester: semesterId,
+        teacher: teacherId
+      })
+      .orderBy('id');
+  }
+
   public getSingle(id: number) {
     return this.db(lessonsTable)
       .select('*')
@@ -104,9 +114,9 @@ export class LessonsService {
   public update(data: LessonEditionInfo) {
     return this.db(lessonsTable)
       .update({
-        semester: data.semester,
+        // semester: data.semester,
         teacher: data.teacher,
-        discipline: data.discipline,
+        // discipline: data.discipline,
         classroom: data.classroom,
         day: data.day,
         number: data.number

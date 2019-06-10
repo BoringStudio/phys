@@ -88,9 +88,14 @@ export type LessonEvent =
   | 'lesson_student_removed';
 
 export class LessonManager {
-  public async fetchAll(onlyCurrentSemester: boolean = true) {
+  public async fetchAll() {
+    const res = await axios.get<ILessonData[]>(`lessons`);
+    return res.data.map((data) => new Lesson(data));
+  }
+
+  public async fetchCurrentSemester(userId?: number) {
     const res = await axios.get<ILessonData[]>(
-      `lessons${onlyCurrentSemester ? '/current_semester' : ''}`
+      `lessons/current_semester${userId != null ? `/user/${userId}` : ''}`
     );
     return res.data.map((data) => new Lesson(data));
   }
@@ -151,7 +156,7 @@ export class LessonManager {
     await axios.put('lesson', data);
     const lesson = new Lesson(data);
 
-    bus.fire('lesson_removed', lesson);
+    bus.fire('lesson_updated', lesson);
     return lesson;
   }
 

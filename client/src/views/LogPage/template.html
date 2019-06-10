@@ -1,4 +1,10 @@
 <page :title="lessonTitle" wide class="log-page">
+  <template v-slot:actions>
+    <b-button variant="primary" v-if="fullAccess" @click="editLesson">
+      <span>Изменить</span>
+    </b-button>
+  </template>
+
   <div class="title noselect">
     <b-row class="m-0">
       <b-col class="p-1">
@@ -203,7 +209,12 @@
     </div>
   </div>
 
-  <lesson-student-modal ref="lesson-student-modal"></lesson-student-modal>
+  <lesson-modal ref="lesson-modal" @submit="onSubmitLessonModal"></lesson-modal>
+
+  <lesson-student-modal
+    ref="lesson-student-modal"
+    @submit="onSubmitLessonStudentModal"
+  ></lesson-student-modal>
 
   <general-modal
     ref="receipt-date-modal"
