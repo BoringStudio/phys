@@ -7,8 +7,8 @@ import {
   DisciplineEditionInfo
 } from '../models/Discipline';
 
-const disciplinesTable = 'disciplines';
-const disciplineTestsTable = 'discipline_tests';
+export const disciplinesTable = 'disciplines';
+export const disciplineTestsTable = 'discipline_tests';
 
 export class DisciplinesService {
   private db: knex;

@@ -9,6 +9,7 @@ import _ from 'underscore';
 import Page from '@/components/Page.vue';
 import GeneralModal from '@/components/GeneralModal.vue';
 import LessonStudentModal from '@/components/LessonStudentModal.vue';
+import LessonModal from '@/components/LessonModal.vue';
 import HasDatepickerMixin from '@/components/HasDatepickerMixin.vue';
 
 import { Student } from '@/models/managers/Student';
@@ -22,6 +23,7 @@ import { Module } from '@/models/managers/Module';
 import { Mark } from '@/models/managers/Mark';
 import { StudentVisit } from '@/models/managers/StudentVisit';
 import { StudentInfo } from '@/models/managers/StudentInfo';
+import { StudentTestMark } from '@/models/managers/StudentTestMark';
 
 import {
   getLessonNumberName,
@@ -45,17 +47,20 @@ type StudentVisitOptional = StudentVisit | null;
   components: {
     Page,
     GeneralModal,
+    LessonModal,
     LessonStudentModal
   }
 })
 export default class LogPage extends Mixins(HasDatepickerMixin) {
   private lessonStudentModal!: LessonStudentModal;
+  private lessonModal!: LessonModal;
   private receiptDateModal!: GeneralModal;
   private examDateModal!: GeneralModal;
 
   private filterString: string = '';
 
   private uniqueVisitsKey: number = 0;
+  private uniqueTestMarksKey: number = 0;
   private state: State = 'schedule';
 
   private lesson: Lesson = new Lesson();
@@ -67,19 +72,29 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   private groups: Group[] = [];
 
   private marks: Mark[] = [];
+  private tests: Test[] = [];
 
   private studentVisits: StudentVisit[] = [];
+  private studentTestMarks: StudentTestMark[] = [];
   private studentInfos: StudentInfo[] = [];
 
   private moduleWeeks: ModuleWeek[][] = [];
   private weekToModule: Map<number, number> = new Map();
   private moduleVisits: StudentVisitOptional[][][] = [];
 
-  private apiThrottler = _.throttle((cb: () => any) => cb(), 500, {
-    leading: false
-  });
+  private fullAccess: boolean = false;
+
+  private apiThrottler = _.debounce((cb: () => any) => cb(), 500, false);
 
   private created() {
+    this.$bus.on(
+      'lesson_updated',
+      (lesson: Lesson) => {
+        this.lesson = lesson;
+      },
+      this
+    );
+
     this.$bus.on(
       'lesson_student_added',
       async (entry: { lessonId: number; studentId: number }) => {
@@ -102,7 +117,8 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         insertOrUpdate(this.students, student);
 
         this.fillStudentVisits();
-      }
+      },
+      this
     );
 
     this.$bus.on(
@@ -115,7 +131,26 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         deleteByIndex(this.students, entry.studentId);
 
         this.fillStudentVisits();
-      }
+      },
+      this
+    );
+
+    this.$bus.on(
+      'student_test_mark_updated',
+      (mark: StudentTestMark) => {
+        insertOrUpdate(this.studentTestMarks, mark);
+      },
+      this
+    );
+
+    this.$bus.on(
+      ['student_test_mark_created', 'student_test_mark_removed'],
+      async (data) => {
+        this.studentTestMarks = await this.$state.lessonManager.fetchTestMarks(
+          this.lesson.id
+        );
+      },
+      this
     );
 
     this.$bus.on('student_visit_updated', (visit: StudentVisit) => {
@@ -128,19 +163,25 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         this.studentVisits = await this.$state.lessonManager.fetchVisits(
           this.lesson.id
         );
-      }
+      },
+      this
     );
 
     this.$bus.on(
       ['student_info_updated', 'student_info_created'],
       (info: StudentInfo) => {
         insertOrUpdate(this.studentInfos, info);
-      }
+      },
+      this
     );
 
     this.$bus.on('student_info_removed', async (id) => {
       deleteByIndex(this.studentInfos, id);
     });
+  }
+
+  private beforeDestroy() {
+    this.$bus.clear(this);
   }
 
   private async beforeMount() {
@@ -160,6 +201,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
       this.modules = info.modules;
       this.students = info.students;
       this.groups = info.groups;
+      this.tests = info.tests;
 
       this.lesson = info.lesson;
 
@@ -171,6 +213,10 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
 
       this.fillWeeks();
       this.fillStudentVisits();
+
+      this.studentTestMarks = await this.$state.lessonManager.fetchTestMarks(
+        this.lesson.id
+      );
 
       this.studentInfos = await this.$state.lessonManager.fetchInfos(
         this.lesson.id
@@ -186,35 +232,71 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   }
 
   private mounted() {
+    this.fullAccess =
+      this.$state.userManager.authorized &&
+      this.$state.userManager.currentUser!.fullAccess;
+
     this.lessonStudentModal = this.$refs[
       'lesson-student-modal'
     ] as LessonStudentModal;
-    this.lessonStudentModal.$on(
-      'submit',
-      async ({ student }: { student: number }) => {
-        this.lessonStudentModal.setInProcess(true);
-
-        try {
-          await this.$state.lessonManager.addStudent(this.lesson.id, student);
-          this.lessonStudentModal.setVisible(false);
-        } catch (e) {
-          this.$notify({
-            title: 'Невозможно добавить студента',
-            type: 'error'
-          });
-          this.lessonStudentModal.setInProcess(false);
-        }
-      }
-    );
-
+    this.lessonModal = this.$refs['lesson-modal'] as LessonModal;
     this.receiptDateModal = this.$refs['receipt-date-modal'] as GeneralModal;
     this.examDateModal = this.$refs['exam-date-modal'] as GeneralModal;
+  }
+
+  private editLesson() {
+    this.lessonModal.show(this.lesson);
   }
 
   private addStudent() {
     this.lessonStudentModal.show({
       student: -1
     });
+  }
+
+  private async removeStudent(student: Student) {
+    if (!confirm('Вы действительно хотите удалить студента?')) {
+      return;
+    }
+
+    try {
+      await this.$state.lessonManager.removeStudent(this.lesson.id, student.id);
+    } catch (e) {
+      this.$notify({
+        title: 'Невозможно удалить студента',
+        type: 'error'
+      });
+    }
+  }
+
+  private async onSubmitLessonModal(lesson: Lesson) {
+    this.lessonModal.setInProcess(true);
+
+    try {
+      await this.$state.lessonManager.update(lesson);
+      this.lessonModal.setVisible(false);
+    } catch (e) {
+      this.$notify({
+        title: 'Невозможно изменить пару',
+        type: 'error'
+      });
+      this.lessonModal.setInProcess(false);
+    }
+  }
+
+  private async onSubmitLessonStudentModal({ student }: { student: number }) {
+    this.lessonStudentModal.setInProcess(true);
+
+    try {
+      await this.$state.lessonManager.addStudent(this.lesson.id, student);
+      this.lessonStudentModal.setVisible(false);
+    } catch (e) {
+      this.$notify({
+        title: 'Невозможно добавить студента',
+        type: 'error'
+      });
+      this.lessonStudentModal.setInProcess(false);
+    }
   }
 
   private get filteredStudents() {
@@ -253,9 +335,11 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     this.semester = new Semester();
     this.students = [];
     this.groups = [];
+    this.tests = [];
 
     this.marks = [];
     this.studentVisits = [];
+    this.studentTestMarks = [];
     this.studentInfos = [];
 
     this.moduleWeeks = [];
@@ -340,6 +424,18 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     return this.moduleVisits[studentIndex];
   }
 
+  private getStudentTestMark(student: Student, test: Test) {
+    const markIndex = this.studentTestMarks.findIndex(
+      (info) => info.student === student.id && info.test === test.id
+    );
+
+    if (markIndex < 0) {
+      return null;
+    }
+
+    return this.studentTestMarks[markIndex].result;
+  }
+
   private getStudentInfo(student: Student) {
     const infoIndex = this.studentInfos.findIndex(
       (info) => info.student === student.id
@@ -412,6 +508,61 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     }
   }
 
+  private async onTestMarkChanged(student: Student, test: Test, value: string) {
+    this.apiThrottler(async () => {
+      const markIndex = this.studentTestMarks.findIndex(
+        (info) => info.student === student.id && info.test === test.id
+      );
+
+      if (value.length === 0) {
+        if (markIndex >= 0) {
+          const testMark = this.studentTestMarks[markIndex];
+          try {
+            await this.$state.studentTestMarkManager.remove(testMark.id);
+            return;
+          } catch (e) {
+            this.$notify({
+              title: 'Невозможно удалить результат',
+              type: 'error'
+            });
+            ++this.uniqueTestMarksKey;
+            return;
+          }
+        } else {
+          return;
+        }
+      }
+
+      const result = parseFloat(value);
+
+      const create = markIndex < 0;
+
+      try {
+        if (create) {
+          await this.$state.studentTestMarkManager.create(
+            new StudentTestMark({
+              test: test.id,
+              result: result,
+              student: student.id,
+              semester: this.semester.id
+            })
+          );
+        } else {
+          await this.$state.studentTestMarkManager.update({
+            ...this.studentTestMarks[markIndex],
+            result: result
+          });
+        }
+      } catch (e) {
+        this.$notify({
+          title: `Невозможно ${create ? 'создать' : 'изменить'} результат`,
+          type: 'error'
+        });
+        ++this.uniqueTestMarksKey;
+      }
+    });
+  }
+
   private updateVisit(
     student: Student,
     moduleIndex: number,
@@ -444,6 +595,33 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     return studentVisits.reduce((sum, m) => sum + this.getModuleSumm(m), 0);
   }
 
+  private getTotalStudentSumm(student: Student) {
+    const studentInfo = this.getStudentInfo(student);
+    return (
+      this.getStudentSumm(student) +
+      studentInfo.summ +
+      this.tests.reduce(
+        (summ, test) => summ + this.getTestResult(student, test),
+        0
+      )
+    );
+  }
+
+  private getTestResult(student: Student, test: Test) {
+    const markIndex = this.studentTestMarks.findIndex(
+      (mark) => mark.student === student.id && mark.test === test.id
+    );
+
+    if (markIndex < 0) {
+      return 0;
+    }
+
+    return test.convert(
+      this.studentTestMarks[markIndex].result,
+      student.gender
+    );
+  }
+
   private editReceiptDate(info: StudentInfo) {
     this.receiptDateModal.show(info);
   }
@@ -456,6 +634,14 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     return moment(date).format('DD.MM.YYYY');
   }
 
+  private isModuleActive(moduleIndex: number) {
+    if (moduleIndex >= this.modules.length) {
+      return false;
+    }
+
+    return this.modules[moduleIndex].isActive;
+  }
+
   private async updateInfo(
     info: StudentInfo,
     fromModal: boolean = true,
@@ -465,8 +651,6 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     >
   ) {
     this.apiThrottler(async () => {
-      console.log('temp');
-
       if (fromModal) {
         this.receiptDateModal.setInProcess(true);
         this.examDateModal.setInProcess(true);

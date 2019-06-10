@@ -12,7 +12,7 @@ import {
   QueryParams,
   UseBefore
 } from 'routing-controllers';
-import { IsInt } from 'class-validator';
+import { IsNumberString } from 'class-validator';
 
 import { injector } from '@/server';
 import { DisciplinesService } from '@/db/services/disciplines.service';
@@ -31,10 +31,10 @@ import { SearchParams } from '@/pagination';
 import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 class DisciplineTestParameters {
-  @IsInt()
+  @IsNumberString()
   public id: number;
 
-  @IsInt()
+  @IsNumberString()
   public testId: number;
 }
 

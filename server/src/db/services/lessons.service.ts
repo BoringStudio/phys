@@ -3,6 +3,9 @@ import { Connection } from '../connection';
 import { LessonCreationInfo, LessonEditionInfo } from '../models/Lesson';
 import { studentsTable } from './students.service';
 import { groupsTable } from './groups.service';
+import { disciplineTestsTable } from './disciplines.service';
+import { testsTable } from './tests.service';
+import { semestersTable } from './semesters.service';
 
 export const lessonsTable = 'lessons';
 export const studentEntriesTable = 'student_entries';
@@ -27,6 +30,16 @@ export class LessonsService {
       .orderBy('id');
   }
 
+  public getTeacherSemesterLessons(teacherId: number, semesterId: number) {
+    return this.db(lessonsTable)
+      .select('*')
+      .where({
+        semester: semesterId,
+        teacher: teacherId
+      })
+      .orderBy('id');
+  }
+
   public getSingle(id: number) {
     return this.db(lessonsTable)
       .select('*')
@@ -36,18 +49,33 @@ export class LessonsService {
       .first();
   }
 
+  public getSemester(id: number) {
+    const db = this.db;
+
+    return this.db(semestersTable)
+      .select(`${semestersTable}.*`)
+      .join(lessonsTable, function() {
+        this.on(`${lessonsTable}.semester`, `${semestersTable}.id`).andOn(
+          `${lessonsTable}.id`,
+          db.raw('?', [id])
+        );
+      })
+      .first();
+  }
+
   public getStudents(id: number) {
     const db = this.db;
 
     return this.db(studentsTable)
-      .distinct()
-      .select(`${studentsTable}.*`)
+      .select(`${studentsTable}.*`, `${studentEntriesTable}.id as entryId`)
       .join(studentEntriesTable, function() {
         this.on(`${studentsTable}.id`, `${studentEntriesTable}.student`).andOn(
           `${studentEntriesTable}.lesson`,
           db.raw('?', [id])
         );
-      });
+      })
+      .groupBy(`${studentsTable}.id`, 'entryId')
+      .orderBy('entryId');
   }
 
   public getGroups(id: number) {
@@ -67,6 +95,24 @@ export class LessonsService {
       });
   }
 
+  public getTests(id: number) {
+    const db = this.db;
+
+    return this.db(testsTable)
+      .distinct()
+      .select(`${testsTable}.*`)
+      .join(`${lessonsTable}`, function() {
+        this.on(`${lessonsTable}.id`, db.raw('?', [id]));
+      })
+      .join(`${disciplineTestsTable}`, function() {
+        this.on(
+          `${disciplineTestsTable}.discipline`,
+          `${lessonsTable}.discipline`
+        ).andOn(`${disciplineTestsTable}.test`, `${testsTable}.id`);
+      })
+      .orderBy(`${testsTable}.id`);
+  }
+
   public create(data: LessonCreationInfo) {
     return this.db(lessonsTable)
       .insert({
@@ -83,9 +129,9 @@ export class LessonsService {
   public update(data: LessonEditionInfo) {
     return this.db(lessonsTable)
       .update({
-        semester: data.semester,
+        // semester: data.semester,
         teacher: data.teacher,
-        discipline: data.discipline,
+        // discipline: data.discipline,
         classroom: data.classroom,
         day: data.day,
         number: data.number

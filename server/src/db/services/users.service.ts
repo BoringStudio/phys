@@ -17,6 +17,27 @@ export class UsersService {
       .orderBy('id');
   }
 
+  public search(match: string, limit: number) {
+    let query = this.db(usersTable).select('*');
+
+    match.split(' ').forEach((word, i) => {
+      const action =
+        i === 0
+          ? (cb: knex.QueryCallback) => query.where(cb)
+          : (cb: knex.QueryCallback) => query.andWhere(cb);
+
+      query = action(function() {
+        this.whereRaw('LOWER(surname) LIKE LOWER(?)', [`%${word}%`])
+          .orWhereRaw('LOWER(name) LIKE LOWER(?)', [`%${word}%`])
+          .orWhereRaw('LOWER(middlename) LIKE LOWER(?)', [`%${word}%`]);
+      });
+    });
+
+    query = query.orderBy(`${usersTable}.id`).limit(limit);
+
+    return query;
+  }
+
   public getSingle(id: number) {
     return this.db(usersTable)
       .select('*')

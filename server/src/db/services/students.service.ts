@@ -1,6 +1,7 @@
 import knex from 'knex';
 import { Connection } from '../connection';
 import { StudentCreationInfo, StudentEditionInfo } from '../models/Student';
+import { groupsTable } from './groups.service';
 
 export const studentsTable = 'students';
 
@@ -32,7 +33,10 @@ export class StudentsService {
   }
 
   public search(match: string, limit: number) {
-    let query = this.db(studentsTable).select(`*`);
+    let query = this.db(`${studentsTable} as S`).select(
+      `S.*`,
+      `G.name as groupName`
+    );
 
     match.split(' ').forEach((word, i) => {
       const action =
@@ -41,13 +45,19 @@ export class StudentsService {
           : (cb: knex.QueryCallback) => query.andWhere(cb);
 
       query = action(function() {
-        this.whereRaw('LOWER(surname) LIKE LOWER(?)', [`%${word}%`])
-          .orWhereRaw('LOWER(name) LIKE LOWER(?)', [`%${word}%`])
-          .orWhereRaw('LOWER(middlename) LIKE LOWER(?)', [`%${word}%`]);
+        this.whereRaw('LOWER("S"."surname") LIKE LOWER(?)', [`%${word}%`])
+          .orWhereRaw('LOWER("S"."name") LIKE LOWER(?)', [`%${word}%`])
+          .orWhereRaw('LOWER("S"."middlename") LIKE LOWER(?)', [`%${word}%`])
+          .orWhereRaw('LOWER("G"."name") LIKE LOWER(?)', [`%${word}%`]);
       });
     });
 
-    query = query.orderBy(`${studentsTable}.id`).limit(limit);
+    query = query
+      .join(`${groupsTable} as G`, function() {
+        this.on(`S.group`, `G.id`);
+      })
+      .orderBy(`S.id`)
+      .limit(limit);
 
     return query;
   }

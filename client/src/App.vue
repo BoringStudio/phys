@@ -12,14 +12,15 @@
           </div>
           <div>{{ fullName }}</div>
         </div>
-        <div
+        <router-link
           v-for="(item, index) in pages"
           :key="`page-${index}`"
+          :to="{ name: item.page }"
           class="button noselect"
           :class="isButtonActive(item.page)"
-          @click="open(item.page)"
-          v-text="item.title"
-        ></div>
+        >
+          <a>{{ item.title }}</a>
+        </router-link>
 
         <div class="button exit-button noselect" @click="onExit">Выход</div>
       </div>
@@ -35,25 +36,29 @@ import { Component, Vue } from 'vue-property-decorator';
 import moment from 'moment-timezone';
 import { User } from './models/managers/User';
 
+interface IPage {
+  page: string;
+  title: string;
+  teacherVisible?: boolean;
+}
+
 @Component
 export default class App extends Vue {
   private now: Date = new Date();
 
   private fullName: string = '';
+  private pages: IPage[] = [];
 
   private created() {
     this.$bus.on('user_authorized', (user: User) => {
-      this.fullName = user.fullName;
+      this.updateInfo();
     });
   }
 
   private mounted() {
     this.updateDate();
 
-    this.fullName =
-      (this.$state.userManager.currentUser &&
-        this.$state.userManager.currentUser.fullName) ||
-      '';
+    this.updateInfo();
   }
 
   private updateDate() {
@@ -62,43 +67,13 @@ export default class App extends Vue {
     setTimeout(this.updateDate, 1000);
   }
 
-  private formatTime(date: Date) {
-    return moment(date).format('dd, HH:mm:ss');
-  }
-
-  private formatDate(date: Date) {
-    return moment(date).format('DD.MM.YYYY');
-  }
-
-  private isButtonActive(route: string) {
-    return {
-      active: this.$route.name === route
-    };
-  }
-
-  private open(route: string) {
-    this.$router.push({ name: route });
-  }
-
-  private onExit() {
-    this.$state.userManager.unauth();
-
-    this.$router.push({
-      name: 'login'
-    });
-  }
-
-  private isPageVisible(page: { teacherVisible?: boolean }) {
+  private updateInfo() {
     const authorized = this.$state.userManager.authorized;
-    return (
-      authorized &&
-      (this.$state.userManager.currentUser!.fullAccess ||
-        page.teacherVisible === true)
-    );
-  }
 
-  private get pages() {
-    return [
+    this.fullName =
+      (authorized && this.$state.userManager.currentUser!.fullName) || '';
+
+    this.pages = [
       {
         page: 'main',
         title: 'Расписание',
@@ -138,7 +113,33 @@ export default class App extends Vue {
         page: 'users',
         title: 'Пользователи'
       }
-    ].filter(this.isPageVisible);
+    ].filter(
+      (page) =>
+        this.$state.userManager.currentUser!.fullAccess ||
+        page.teacherVisible === true
+    );
+  }
+
+  private formatTime(date: Date) {
+    return moment(date).format('dd, HH:mm:ss');
+  }
+
+  private formatDate(date: Date) {
+    return moment(date).format('DD.MM.YYYY');
+  }
+
+  private isButtonActive(route: string) {
+    return {
+      active: this.$route.name === route
+    };
+  }
+
+  private onExit() {
+    this.$state.userManager.unauth();
+
+    this.$router.push({
+      name: 'login'
+    });
   }
 }
 </script>
@@ -181,9 +182,15 @@ body {
     box-shadow: 2px 0 0 #d6d6d6;
     padding-top: $padding-vertical;
 
-    & > div {
+    & > div,
+    & > a {
       padding-left: $padding-horizontal;
       padding-right: $padding-horizontal;
+    }
+
+    & > a {
+      color: $font-color;
+      text-decoration: none;
     }
 
     .title {

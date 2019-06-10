@@ -9,7 +9,9 @@ dotenv.config();
 
 import { config } from './config';
 import moment from 'moment-timezone';
+import 'moment/locale/ru';
 moment.tz.setDefault('Europe/Moscow');
+moment.locale('ru');
 
 import { UsersService } from './db/services/users.service';
 import { GroupsService } from './db/services/groups.service';
@@ -24,6 +26,7 @@ import { MarksService } from './db/services/marks.service';
 import { StudentVisitsService } from './db/services/studentVisits.service';
 import { ParametersService } from './db/services/parameters.service';
 import { StudentInfosService } from './db/services/studentInfos.service';
+import { StudentTestMarksService } from './db/services/studentTestMarks.service';
 
 import { AuthController } from './controllers/auth.controller';
 import { UsersController } from './controllers/users.controller';
@@ -39,6 +42,7 @@ import { MarksController } from './controllers/marks.controller';
 import { StudentVisitsController } from './controllers/studentVisits.controller';
 import { ParametersController } from './controllers/parameters.controller';
 import { StudentInfosController } from './controllers/studentInfos.controller';
+import { StudentTestMarksController } from './controllers/studentTestMarks.controller';
 
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { ErrorMiddleware } from './middlewares/error.middleware';
@@ -57,7 +61,8 @@ export const injector = ReflectiveInjector.resolveAndCreate([
   MarksService,
   StudentVisitsService,
   ParametersService,
-  StudentInfosService
+  StudentInfosService,
+  StudentTestMarksService
 ]);
 useContainer(Container);
 
@@ -79,7 +84,8 @@ const app: Koa = createKoaServer({
     MarksController,
     StudentVisitsController,
     ParametersController,
-    StudentInfosController
+    StudentInfosController,
+    StudentTestMarksController
   ],
   middlewares: [ErrorMiddleware, LoggingMiddleware, AuthMiddleware]
 });

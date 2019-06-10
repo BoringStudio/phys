@@ -41,3 +41,21 @@ export class NotAllowedError extends HttpError {
 }
 
 export const notAllowedErrorHandler = createErrorHandler(new NotAllowedError());
+
+export class NotInRangeError extends HttpError {
+  constructor() {
+    super(400, 'not in range');
+  }
+}
+
+export const notInRangeErrorHandler = createErrorHandler(new NotInRangeError());
+
+export class InactiveModuleError extends HttpError {
+  constructor() {
+    super(400, 'inactive module');
+  }
+}
+
+export const inactiveModuleErrorHandler = createErrorHandler(
+  new InactiveModuleError()
+);

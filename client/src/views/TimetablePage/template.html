@@ -23,6 +23,8 @@
                 class="place m-0"
                 v-for="(instance, instanceIndex) in lesson"
                 :key="`lesson-${dayIndex}-${lessonIndex}-${instanceIndex}`"
+                v-b-tooltip.hover
+                :title="getTeacherName(instance)"
                 @click="openLog(instance)"
               >
                 <b-col class="item-centered">

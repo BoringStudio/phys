@@ -39,7 +39,7 @@ export class ModalMixin extends Vue {
     this.modal.show(data);
   }
 
-  private mounted() {
+  public mounted() {
     this.modal = this.$children[0] as GeneralModal;
     this.modal.$on('submit', (data: any) => {
       this.$emit('submit', data);

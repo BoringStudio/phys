@@ -24,14 +24,14 @@ import {
 } from '../errors';
 
 import { PaginationQueryParams, SearchParams } from '@/pagination';
-import { IsInt } from 'class-validator';
+import { IsNumberString } from 'class-validator';
 import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 
 class StudentInfoParameters {
-  @IsInt()
+  @IsNumberString()
   public id: number;
 
-  @IsInt()
+  @IsNumberString()
   public semesterId: number;
 }
 

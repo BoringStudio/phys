@@ -6,6 +6,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { Lesson } from '@/models/managers/Lesson';
 import { Classroom } from '@/models/managers/Classroom';
 import { Discipline } from '@/models/managers/Discipline';
+import { User } from '@/models/managers/User';
 import {
   updateIfExists,
   DayNumber,
@@ -30,16 +31,24 @@ export default class TimeTablePage extends Vue {
   private classrooms: Classroom[] = [];
   private disciplines: Discipline[] = [];
 
+  private users: User[] = [];
+
+  private fullAccess: boolean = false;
+
   private async created() {
     this.$bus.on('lesson_updated', (lesson: Lesson) => {
       updateIfExists(this.lessons, lesson);
     });
     this.$bus.on(['lesson_created', 'lesson_removed'], async () => {
-      this.lessons = await this.$state.lessonManager.fetchAll();
+      this.lessons = await this.fetchLessons();
     });
   }
 
   private async mounted() {
+    this.fullAccess =
+      this.$state.userManager.authorized &&
+      this.$state.userManager.currentUser!.fullAccess;
+
     this.lessonModal = this.$refs['lesson-modal'] as LessonModal;
     this.lessonModal.$on('submit', async (lesson: Lesson) => {
       this.lessonModal.setInProcess(true);
@@ -63,10 +72,14 @@ export default class TimeTablePage extends Vue {
       }
     });
 
+    this.users = this.fullAccess
+      ? await this.$state.userManager.fetchAll()
+      : [];
+
     [this.classrooms, this.disciplines, this.lessons] = await Promise.all([
       this.$state.classroomManager.fetchAll(),
       this.$state.disciplineManager.fetchAll(),
-      this.$state.lessonManager.fetchAll()
+      this.fetchLessons()
     ]);
   }
 
@@ -92,24 +105,20 @@ export default class TimeTablePage extends Vue {
     return getDayName(day);
   }
 
-  private getLessonNumberName(num: LessonNumber) {
-    return getLessonNumberName(num);
+  private getTeacherName(lesson: Lesson) {
+    const userIndex = this.users.findIndex(
+      (user) => user.id === lesson.teacher
+    );
+
+    if (userIndex < 0) {
+      return '';
+    }
+
+    return this.users[userIndex].fullName;
   }
 
-  private get days() {
-    const result: Lesson[][][] = Array(6)
-      .fill(null)
-      .map(() => {
-        return Array(5)
-          .fill(null)
-          .map(() => []);
-      });
-
-    this.lessons.forEach((lesson) => {
-      result[lesson.day][lesson.number].push(lesson);
-    });
-
-    return result;
+  private getLessonNumberName(num: LessonNumber) {
+    return getLessonNumberName(num);
   }
 
   private getLessonClassroomName(lesson: Lesson) {
@@ -126,6 +135,34 @@ export default class TimeTablePage extends Vue {
     );
 
     return index < 0 ? '' : this.disciplines[index].name;
+  }
+
+  private async fetchLessons() {
+    if (!this.$state.userManager.authorized) {
+      return [];
+    }
+
+    return this.$state.lessonManager.fetchCurrentSemester(
+      this.$state.userManager.currentUser!.fullAccess
+        ? undefined
+        : this.$state.userManager.currentUser!.id
+    );
+  }
+
+  private get days() {
+    const result: Lesson[][][] = Array(6)
+      .fill(null)
+      .map(() => {
+        return Array(5)
+          .fill(null)
+          .map(() => []);
+      });
+
+    this.lessons.forEach((lesson) => {
+      result[lesson.day][lesson.number].push(lesson);
+    });
+
+    return result;
   }
 }
 </script>

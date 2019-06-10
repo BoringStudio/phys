@@ -8,7 +8,8 @@ import {
   NotFoundError,
   Put,
   Delete,
-  UseBefore
+  UseBefore,
+  QueryParams
 } from 'routing-controllers';
 
 import { injector } from '@/server';
@@ -20,6 +21,7 @@ import {
   haveDependenciesErrorHandler
 } from '@/errors';
 import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
+import { SearchParams } from '@/pagination';
 
 @JsonController()
 export class UsersController {
@@ -34,6 +36,24 @@ export class UsersController {
       const { password, ...res } = user;
       return res;
     });
+  }
+
+  @Get('/users/search')
+  @UseBefore(RestrictMiddleware)
+  public async search(@QueryParams() { match, limit }: SearchParams) {
+    if (match == null || limit == null || match.length === 0) {
+      return [];
+    }
+
+    let decoded = '';
+
+    try {
+      decoded = decodeURIComponent(match);
+    } catch (e) {
+      return [];
+    }
+
+    return await this.users.search(decoded, limit).catch(simpleErrorHandler);
   }
 
   @Get('/user/:id')

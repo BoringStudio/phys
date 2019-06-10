@@ -99,6 +99,13 @@ export class UserManager {
     return new User(res.data);
   }
 
+  public async search(value: string, limit: number = 10) {
+    const res = await axios.get<IUserData[]>(
+      `users/search?match=${encodeURIComponent(value)}&limit=${limit}`
+    );
+    return res.data.map((data) => new User(data));
+  }
+
   public async create(data: Omit<IUserData, 'id'>) {
     const res = await axios.post<number>('user', data);
 
