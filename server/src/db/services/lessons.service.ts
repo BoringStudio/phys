@@ -3,6 +3,8 @@ import { Connection } from '../connection';
 import { LessonCreationInfo, LessonEditionInfo } from '../models/Lesson';
 import { studentsTable } from './students.service';
 import { groupsTable } from './groups.service';
+import { disciplineTestsTable } from './disciplines.service';
+import { testsTable } from './tests.service';
 
 export const lessonsTable = 'lessons';
 export const studentEntriesTable = 'student_entries';
@@ -40,14 +42,15 @@ export class LessonsService {
     const db = this.db;
 
     return this.db(studentsTable)
-      .distinct()
-      .select(`${studentsTable}.*`)
+      .select(`${studentsTable}.*`, `${studentEntriesTable}.id as entryId`)
       .join(studentEntriesTable, function() {
         this.on(`${studentsTable}.id`, `${studentEntriesTable}.student`).andOn(
           `${studentEntriesTable}.lesson`,
           db.raw('?', [id])
         );
-      });
+      })
+      .groupBy(`${studentsTable}.id`, 'entryId')
+      .orderBy('entryId');
   }
 
   public getGroups(id: number) {
@@ -65,6 +68,24 @@ export class LessonsService {
           db.raw('?', [id])
         );
       });
+  }
+
+  public getTests(id: number) {
+    const db = this.db;
+
+    return this.db(testsTable)
+      .distinct()
+      .select(`${testsTable}.*`)
+      .join(`${lessonsTable}`, function() {
+        this.on(`${lessonsTable}.id`, db.raw('?', [id]));
+      })
+      .join(`${disciplineTestsTable}`, function() {
+        this.on(
+          `${disciplineTestsTable}.discipline`,
+          `${lessonsTable}.discipline`
+        ).andOn(`${disciplineTestsTable}.test`, `${testsTable}.id`);
+      })
+      .orderBy(`${testsTable}.id`);
   }
 
   public create(data: LessonCreationInfo) {

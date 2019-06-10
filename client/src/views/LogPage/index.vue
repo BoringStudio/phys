@@ -31,6 +31,7 @@ import {
   findById,
   findIndexById
 } from '@/models/Stuff';
+import { StudentTestMark } from '../../models/managers/StudentTestMark';
 
 type State = 'schedule' | 'tests' | 'infos';
 
@@ -56,6 +57,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   private filterString: string = '';
 
   private uniqueVisitsKey: number = 0;
+  private uniqueTestMarksKey: number = 0;
   private state: State = 'schedule';
 
   private lesson: Lesson = new Lesson();
@@ -67,8 +69,10 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   private groups: Group[] = [];
 
   private marks: Mark[] = [];
+  private tests: Test[] = [];
 
   private studentVisits: StudentVisit[] = [];
+  private studentTestMarks: StudentTestMark[] = [];
   private studentInfos: StudentInfo[] = [];
 
   private moduleWeeks: ModuleWeek[][] = [];
@@ -118,6 +122,19 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
       }
     );
 
+    this.$bus.on('student_test_mark_updated', (mark: StudentTestMark) => {
+      insertOrUpdate(this.studentTestMarks, mark);
+    });
+
+    this.$bus.on(
+      ['student_test_mark_created', 'student_test_mark_removed'],
+      async () => {
+        this.studentTestMarks = await this.$state.lessonManager.fetchTestMarks(
+          this.lesson.id
+        );
+      }
+    );
+
     this.$bus.on('student_visit_updated', (visit: StudentVisit) => {
       insertOrUpdate(this.studentVisits, visit);
     });
@@ -160,6 +177,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
       this.modules = info.modules;
       this.students = info.students;
       this.groups = info.groups;
+      this.tests = info.tests;
 
       this.lesson = info.lesson;
 
@@ -171,6 +189,10 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
 
       this.fillWeeks();
       this.fillStudentVisits();
+
+      this.studentTestMarks = await this.$state.lessonManager.fetchTestMarks(
+        this.lesson.id
+      );
 
       this.studentInfos = await this.$state.lessonManager.fetchInfos(
         this.lesson.id
@@ -253,9 +275,11 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     this.semester = new Semester();
     this.students = [];
     this.groups = [];
+    this.tests = [];
 
     this.marks = [];
     this.studentVisits = [];
+    this.studentTestMarks = [];
     this.studentInfos = [];
 
     this.moduleWeeks = [];
@@ -340,6 +364,18 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     return this.moduleVisits[studentIndex];
   }
 
+  private getStudentTestMark(student: Student, test: Test) {
+    const markIndex = this.studentTestMarks.findIndex(
+      (info) => info.student === student.id && info.test === test.id
+    );
+
+    if (markIndex < 0) {
+      return null;
+    }
+
+    return this.studentTestMarks[markIndex];
+  }
+
   private getStudentInfo(student: Student) {
     const infoIndex = this.studentInfos.findIndex(
       (info) => info.student === student.id
@@ -410,6 +446,30 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
       });
       this.updateVisit(student, moduleIndex, visitIndex, visit);
     }
+  }
+
+  private async onTestMarkChanged(student: Student, test: Test, value: string) {
+    this.apiThrottler(async () => {
+      const markIndex = this.studentTestMarks.findIndex(
+        (info) => info.student === student.id && info.test === test.id
+      );
+
+      if (value.length == 0 && markIndex >= 0) {
+        const testMark = this.studentTestMarks[markIndex];
+        try {
+          await this.$state.studentTestMarkManager.remove(testMark.id);
+          return;
+        } catch (e) {
+          this.$notify({
+            title: 'Невозможно удалить результат',
+            type: 'error'
+          });
+          return;
+        }
+      }
+
+      
+    });
   }
 
   private updateVisit(

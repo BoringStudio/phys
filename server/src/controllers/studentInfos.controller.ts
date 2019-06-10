@@ -40,7 +40,6 @@ export class StudentInfosController {
   }
 
   @Post('/student_info')
-  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: StudentInfoCreationInfo) {
     const [id] = await this.studentInfos
       .create(data)
@@ -50,7 +49,6 @@ export class StudentInfosController {
   }
 
   @Put('/student_info')
-  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: StudentInfoEditionInfo) {
     await this.studentInfos.update(data).catch(alreadyExistsErrorHandler);
     return {};

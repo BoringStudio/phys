@@ -1,4 +1,4 @@
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt } from 'class-validator';
 
 export class StudentVisit {
   public id: number;

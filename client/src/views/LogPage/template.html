@@ -108,36 +108,37 @@
       <!-- END MARKS TABLE -->
 
       <!-- BEGIN TESTS TABLE -->
-      <!--<div class="tests-table" v-else-if="state === 'tests'">
+      <div class="tests-table" v-else-if="state === 'tests'">
         <div class="title">
           <template v-for="(test, testIndex) in tests">
             <div class="item" :key="`test-${testIndex}`">{{ test.name }}</div>
           </template>
         </div>
-        <div class="rows-container">
+        <div class="rows-container" :key="uniqueTestMarksKey">
           <div
             class="items-row"
             v-for="(student, studentIndex) in filteredStudents"
             :key="`student-row-${studentIndex}`"
           >
-            <template v-for="(testMark, markIndex) in student.testMarks">
+            <template v-for="(test, testIndex) in tests">
               <div
                 class="item"
-                :key="`test-result-${studentIndex}-${markIndex}`"
+                :key="`test-result-${studentIndex}-${testIndex}`"
               >
-                <b-input v-model="testMark.value"></b-input>
+                <b-form-input
+                  type="number"
+                  :value="getStudentTestMark(student, test)"
+                  @input="(value) => onTestMarkChanged(student, test, value)"
+                ></b-form-input>
               </div>
-              <div class="item" :key="`test-mark-${studentIndex}-${markIndex}`">
-                {{
-                  testMark.value
-                    ? tests[markIndex].convert(testMark.value)
-                    : '-'
-                }}
-              </div>
+              <div
+                class="item"
+                :key="`test-mark-${studentIndex}-${testIndex}`"
+              ></div>
             </template>
           </div>
         </div>
-      </div>-->
+      </div>
       <!-- END TESTS TABLE -->
 
       <!-- BEGIN INFOS TABLE -->

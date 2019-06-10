@@ -9,6 +9,8 @@ import { ISemesterData, Semester } from './Semester';
 import { IModuleData, Module } from './Module';
 import { IStudentInfoData, StudentInfo } from './StudentInfo';
 import { IStudentVisitData, StudentVisit } from './StudentVisit';
+import { ITestData, Test } from './Test';
+import { IStudentTestMarkData, StudentTestMark } from './StudentTestMark';
 
 export interface ILessonData {
   id: number;
@@ -52,6 +54,7 @@ export interface ILessonFullInfoData {
   modules: IModuleData[];
   students: IStudentData[];
   groups: IGroupData[];
+  tests: ITestData[];
 }
 
 export class LessonFullInfo implements ILessonFullInfoData {
@@ -62,6 +65,7 @@ export class LessonFullInfo implements ILessonFullInfoData {
   public modules: Module[];
   public students: Student[];
   public groups: Group[];
+  public tests: Test[];
 
   constructor(data?: ILessonFullInfoData) {
     this.lesson = new Lesson(data && data.lesson);
@@ -72,6 +76,7 @@ export class LessonFullInfo implements ILessonFullInfoData {
     this.students =
       (data && data.students.map((data) => new Student(data))) || [];
     this.groups = (data && data.groups.map((data) => new Group(data))) || [];
+    this.tests = (data && data.tests.map((data) => new Test(data))) || [];
   }
 }
 
@@ -115,6 +120,13 @@ export class LessonManager {
       `lesson/${lessonId}/student_visits`
     );
     return res.data.map((data) => new StudentVisit(data));
+  }
+
+  public async fetchTestMarks(lessonId: number) {
+    const res = await axios.get<IStudentTestMarkData[]>(
+      `lesson/${lessonId}/student_test_marks`
+    );
+    return res.data.map((data) => new StudentTestMark(data));
   }
 
   public async fetchInfos(lessonId: number) {

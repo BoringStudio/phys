@@ -37,6 +37,7 @@ import { SemestersService } from '@/db/services/semesters.service';
 import { StudentInfosService } from '@/db/services/studentInfos.service';
 import { StudentVisitsService } from '@/db/services/studentVisits.service';
 import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
+import { StudentTestMarksService } from '@/db/services/studentTestMarks.service';
 
 class StudentEntryParameters {
   @IsInt()
@@ -56,6 +57,9 @@ export class LessonsController {
   private studentInfos: StudentInfosService = injector.get(StudentInfosService);
   private studentVisits: StudentVisitsService = injector.get(
     StudentVisitsService
+  );
+  private studentTestMarks: StudentTestMarksService = injector.get(
+    StudentTestMarksService
   );
 
   @Get('/lessons')
@@ -99,13 +103,15 @@ export class LessonsController {
       discipline,
       semester,
       students,
-      groups
+      groups,
+      tests
     ] = await Promise.all([
       this.classrooms.getSingle(lesson.classroom),
       this.disciplines.getSingle(lesson.discipline),
       this.semesters.getSingle(lesson.semester),
       this.lessons.getStudents(id),
-      this.lessons.getGroups(id)
+      this.lessons.getGroups(id),
+      this.lessons.getTests(lesson.id)
     ]);
 
     const modules = await this.semesters.getModules(semester.id);
@@ -117,7 +123,8 @@ export class LessonsController {
       semester,
       modules,
       students,
-      groups
+      groups,
+      tests
     };
   }
 
@@ -133,6 +140,14 @@ export class LessonsController {
     return await this.studentInfos.getLessonInfos(id).catch(simpleErrorHandler);
   }
 
+  @Get('/lesson/:id/student_test_marks')
+  @OnUndefined(NotFoundError)
+  public async getLessonTestMarks(@Param('id') id: any) {
+    return await this.studentTestMarks
+      .getLessonTestMarks(id)
+      .catch(simpleErrorHandler);
+  }
+
   @Get('/lesson/:id/student_visits')
   public async getStudentVisits(@Param('id') id: any) {
     return await this.studentVisits
@@ -140,10 +155,23 @@ export class LessonsController {
       .catch(simpleErrorHandler);
   }
 
+  @Get('/lesson/:id/student_test_marks')
+  public async getStudentTestMarks(@Param('id') id: any) {
+    return await this.studentTestMarks
+      .getLessonTestMarks(id)
+      .catch(simpleErrorHandler);
+  }
+
   @Get('/lesson/:id/groups')
   @OnUndefined(NotFoundError)
   public async getGroups(@Param('id') id: any) {
     return await this.lessons.getGroups(id).catch(simpleErrorHandler);
+  }
+
+  @Get('/lesson/:id/tests')
+  @OnUndefined(NotFoundError)
+  public async getTests(@Param('id') id: any) {
+    return await this.lessons.getTests(id).catch(simpleErrorHandler);
   }
 
   @Post('/lesson')
