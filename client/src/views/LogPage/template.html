@@ -157,6 +157,7 @@
           <div class="item wider">Соревнования</div>
           <div class="item wider">Личностные качества</div>
           <div class="item wider">Дата зачёта</div>
+          <div class="item module">Итого</div>
         </div>
         <div class="rows-container">
           <div
@@ -201,6 +202,9 @@
               </div>
               <div class="item wider button" @click="editExamDate(info)">
                 {{ (info.examDate && formatDate(info.examDate)) || '' }}
+              </div>
+              <div class="item">
+                {{ getTotalStudentSumm(student) }}
               </div>
             </template>
           </div>

@@ -146,7 +146,6 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     this.$bus.on(
       ['student_test_mark_created', 'student_test_mark_removed'],
       async (data) => {
-        console.log('asd', data);
         this.studentTestMarks = await this.$state.lessonManager.fetchTestMarks(
           this.lesson.id
         );
@@ -179,11 +178,9 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     this.$bus.on('student_info_removed', async (id) => {
       deleteByIndex(this.studentInfos, id);
     });
-    console.log('created');
   }
 
   private beforeDestroy() {
-    console.log('before destroy');
     this.$bus.clear(this);
   }
 
@@ -598,13 +595,25 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     return studentVisits.reduce((sum, m) => sum + this.getModuleSumm(m), 0);
   }
 
+  private getTotalStudentSumm(student: Student) {
+    const studentInfo = this.getStudentInfo(student);
+    return (
+      this.getStudentSumm(student) +
+      studentInfo.summ +
+      this.tests.reduce(
+        (summ, test) => summ + this.getTestResult(student, test),
+        0
+      )
+    );
+  }
+
   private getTestResult(student: Student, test: Test) {
     const markIndex = this.studentTestMarks.findIndex(
       (mark) => mark.student === student.id && mark.test === test.id
     );
 
     if (markIndex < 0) {
-      return '';
+      return 0;
     }
 
     return test.convert(
