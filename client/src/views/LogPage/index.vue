@@ -90,7 +90,6 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
 
   private created() {
     this.$bus.on('lesson_updated', (lesson: Lesson) => {
-      console.log(lesson);
       this.lesson = lesson;
     });
 
@@ -238,6 +237,21 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     this.lessonStudentModal.show({
       student: -1
     });
+  }
+
+  private async removeStudent(student: Student) {
+    if (!confirm('Вы действительно хотите удалить студента?')) {
+      return;
+    }
+
+    try {
+      await this.$state.lessonManager.removeStudent(this.lesson.id, student.id);
+    } catch (e) {
+      this.$notify({
+        title: 'Невозможно удалить студента',
+        type: 'error'
+      });
+    }
   }
 
   private async onSubmitLessonModal(lesson: Lesson) {
@@ -545,6 +559,14 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     return moment(date).format('DD.MM.YYYY');
   }
 
+  private isModuleActive(moduleIndex: number) {
+    if (moduleIndex >= this.modules.length) {
+      return false;
+    }
+
+    return this.modules[moduleIndex].isActive;
+  }
+
   private async updateInfo(
     info: StudentInfo,
     fromModal: boolean = true,
@@ -554,8 +576,6 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
     >
   ) {
     this.apiThrottler(async () => {
-      console.log('temp');
-
       if (fromModal) {
         this.receiptDateModal.setInProcess(true);
         this.examDateModal.setInProcess(true);

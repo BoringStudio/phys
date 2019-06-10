@@ -4,7 +4,8 @@ import {
   StudentVisitCreationInfo,
   StudentVisitEditionInfo
 } from '../models/StudentVisit';
-import { studentEntriesTable } from './lessons.service';
+import { studentEntriesTable, lessonsTable } from './lessons.service';
+import { semestersTable } from './semesters.service';
 
 const studentVisitsTable = 'student_visits';
 
@@ -26,6 +27,56 @@ export class StudentVisitsService {
       .select('*')
       .where({
         id
+      })
+      .first();
+  }
+
+  public getLesson(id: number) {
+    const db = this.db;
+
+    return this.db(lessonsTable)
+      .select(`${lessonsTable}.*`)
+      .join(studentVisitsTable, function() {
+        this.on(`${studentVisitsTable}.id`, db.raw('?', [id]));
+      })
+      .join(studentEntriesTable, function() {
+        this.on(
+          `${studentEntriesTable}.id`,
+          `${studentVisitsTable}.entry`
+        ).andOn(`${studentEntriesTable}.lesson`, `${lessonsTable}.id`);
+      })
+      .first();
+  }
+
+  public getSemester(id: number) {
+    const db = this.db;
+
+    return this.db(semestersTable)
+      .select(`${semestersTable}.*`)
+      .join(studentVisitsTable, function() {
+        this.on(`${studentVisitsTable}.id`, db.raw('?', [id]));
+      })
+      .join(studentEntriesTable, function() {
+        this.on(`${studentEntriesTable}.id`, `${studentVisitsTable}.entry`);
+      })
+      .join(lessonsTable, function() {
+        this.on(`${lessonsTable}.id`, `${studentEntriesTable}.lesson`).andOn(
+          `${lessonsTable}.semester`,
+          `${semestersTable}.id`
+        );
+      })
+      .first();
+  }
+
+  public getEntry(id: number) {
+    const db = this.db;
+    return this.db(studentEntriesTable)
+      .select(`${studentEntriesTable}.*`)
+      .join(studentVisitsTable, function() {
+        this.on(
+          `${studentVisitsTable}.entry`,
+          `${studentEntriesTable}.id`
+        ).andOn(`${studentVisitsTable}.id`, db.raw('?', [id]));
       })
       .first();
   }

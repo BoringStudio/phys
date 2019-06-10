@@ -173,6 +173,18 @@ $students-width: 425px;
     }
   }
 
+  .schedule-table {
+    .title {
+      .item:nth-child(odd).active {
+        background-color: darken(#b1d5b6, 7);
+      }
+
+      .item:nth-child(even).active {
+        background-color: #b1d5b6;
+      }
+    }
+  }
+
   .tests-table {
     .title .item {
       width: 14em;

@@ -53,7 +53,9 @@ export default class StudentInput extends Vue {
   }
 
   private serialize(student: Student) {
-    return student.fullName;
+    return (
+      ((student.groupName && `${student.groupName} `) || '') + student.fullName
+    );
   }
 }
 </script>

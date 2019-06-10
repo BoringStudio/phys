@@ -9,7 +9,9 @@ dotenv.config();
 
 import { config } from './config';
 import moment from 'moment-timezone';
+import 'moment/locale/ru';
 moment.tz.setDefault('Europe/Moscow');
+moment.locale('ru');
 
 import { UsersService } from './db/services/users.service';
 import { GroupsService } from './db/services/groups.service';

@@ -5,6 +5,7 @@ import { studentsTable } from './students.service';
 import { groupsTable } from './groups.service';
 import { disciplineTestsTable } from './disciplines.service';
 import { testsTable } from './tests.service';
+import { semestersTable } from './semesters.service';
 
 export const lessonsTable = 'lessons';
 export const studentEntriesTable = 'student_entries';
@@ -44,6 +45,20 @@ export class LessonsService {
       .select('*')
       .where({
         id
+      })
+      .first();
+  }
+
+  public getSemester(id: number) {
+    const db = this.db;
+
+    return this.db(semestersTable)
+      .select(`${semestersTable}.*`)
+      .join(lessonsTable, function() {
+        this.on(`${lessonsTable}.semester`, `${semestersTable}.id`).andOn(
+          `${lessonsTable}.id`,
+          db.raw('?', [id])
+        );
       })
       .first();
   }

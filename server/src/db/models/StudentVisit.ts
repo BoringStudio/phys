@@ -2,10 +2,9 @@ import { IsInt } from 'class-validator';
 
 export class StudentVisit {
   public id: number;
-  public date: Date;
-  public lesson: number;
+  public entry: number;
+  public week: number;
   public mark: number;
-  public student: number;
 }
 
 export class StudentVisitCreationInfo {

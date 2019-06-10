@@ -21,6 +21,8 @@ export class Student implements IStudentData {
   public gender: Gender = 'male';
   public group: number = -1;
 
+  public groupName?: string = '';
+
   constructor(data?: IStudentData) {
     if (data == null) {
       return;
@@ -32,6 +34,8 @@ export class Student implements IStudentData {
     this.middlename = data.middlename;
     this.gender = data.gender;
     this.group = data.group;
+
+    this.groupName = (data as any).groupName;
   }
 
   public get fullName() {

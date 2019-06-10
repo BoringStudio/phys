@@ -12,14 +12,15 @@
           </div>
           <div>{{ fullName }}</div>
         </div>
-        <div
+        <router-link
           v-for="(item, index) in pages"
           :key="`page-${index}`"
+          :to="{ name: item.page }"
           class="button noselect"
           :class="isButtonActive(item.page)"
-          @click="open(item.page)"
-          v-text="item.title"
-        ></div>
+        >
+          <a>{{ item.title }}</a>
+        </router-link>
 
         <div class="button exit-button noselect" @click="onExit">Выход</div>
       </div>
@@ -133,10 +134,6 @@ export default class App extends Vue {
     };
   }
 
-  private open(route: string) {
-    this.$router.push({ name: route });
-  }
-
   private onExit() {
     this.$state.userManager.unauth();
 
@@ -185,9 +182,15 @@ body {
     box-shadow: 2px 0 0 #d6d6d6;
     padding-top: $padding-vertical;
 
-    & > div {
+    & > div,
+    & > a {
       padding-left: $padding-horizontal;
       padding-right: $padding-horizontal;
+    }
+
+    & > a {
+      color: $font-color;
+      text-decoration: none;
     }
 
     .title {

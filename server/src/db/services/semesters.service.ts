@@ -4,7 +4,7 @@ import { SemesterCreationInfo, SemesterEditionInfo } from '../models/Semester';
 
 import { modulesTable } from './modules.service';
 
-const semestersTable = 'semesters';
+export const semestersTable = 'semesters';
 
 export class SemestersService {
   private db: knex;

@@ -31,7 +31,7 @@ import { ParametersService } from '@/db/services/parameters.service';
 import { ParameterType } from '@/db/models/Parameter';
 import { Context } from 'koa';
 import { User } from '@/db/models/User';
-import { IsInt } from 'class-validator';
+import { IsNumberString } from 'class-validator';
 import { ClassroomsService } from '@/db/services/classrooms.service';
 import { DisciplinesService } from '@/db/services/disciplines.service';
 import { SemestersService } from '@/db/services/semesters.service';
@@ -41,10 +41,10 @@ import { RestrictMiddleware } from '@/middlewares/restrict.middleware';
 import { StudentTestMarksService } from '@/db/services/studentTestMarks.service';
 
 class StudentEntryParameters {
-  @IsInt()
+  @IsNumberString()
   public id: number;
 
-  @IsInt()
+  @IsNumberString()
   public studentId: number;
 }
 
