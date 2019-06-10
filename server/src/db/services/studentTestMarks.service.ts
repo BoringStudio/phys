@@ -46,16 +46,10 @@ export class StudentTestMarksService {
     return this.db(studentTestMarksTable)
       .distinct()
       .select(`${studentTestMarksTable}.*`)
-      .join(`${lessonsTable}`, function() {
-        this.on(
-          `${lessonsTable}.semester`,
-          `${studentTestMarksTable}.semester`
-        );
-      })
       .join(`${studentEntriesTable}`, function() {
         this.on(
           `${studentEntriesTable}.student`,
-          `${studentTestMarksTable}.id`
+          `${studentTestMarksTable}.student`
         ).andOn(`${studentEntriesTable}.lesson`, db.raw('?', [lessonId]));
       });
   }

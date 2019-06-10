@@ -84,14 +84,16 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
 
   private fullAccess: boolean = false;
 
-  private apiThrottler = _.throttle((cb: () => any) => cb(), 500, {
-    leading: false
-  });
+  private apiThrottler = _.debounce((cb: () => any) => cb(), 500, false);
 
   private created() {
-    this.$bus.on('lesson_updated', (lesson: Lesson) => {
-      this.lesson = lesson;
-    });
+    this.$bus.on(
+      'lesson_updated',
+      (lesson: Lesson) => {
+        this.lesson = lesson;
+      },
+      this
+    );
 
     this.$bus.on(
       'lesson_student_added',
@@ -115,7 +117,8 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         insertOrUpdate(this.students, student);
 
         this.fillStudentVisits();
-      }
+      },
+      this
     );
 
     this.$bus.on(
@@ -128,20 +131,27 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         deleteByIndex(this.students, entry.studentId);
 
         this.fillStudentVisits();
-      }
+      },
+      this
     );
 
-    this.$bus.on('student_test_mark_updated', (mark: StudentTestMark) => {
-      insertOrUpdate(this.studentTestMarks, mark);
-    });
+    this.$bus.on(
+      'student_test_mark_updated',
+      (mark: StudentTestMark) => {
+        insertOrUpdate(this.studentTestMarks, mark);
+      },
+      this
+    );
 
     this.$bus.on(
       ['student_test_mark_created', 'student_test_mark_removed'],
-      async () => {
+      async (data) => {
+        console.log('asd', data);
         this.studentTestMarks = await this.$state.lessonManager.fetchTestMarks(
           this.lesson.id
         );
-      }
+      },
+      this
     );
 
     this.$bus.on('student_visit_updated', (visit: StudentVisit) => {
@@ -154,19 +164,27 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         this.studentVisits = await this.$state.lessonManager.fetchVisits(
           this.lesson.id
         );
-      }
+      },
+      this
     );
 
     this.$bus.on(
       ['student_info_updated', 'student_info_created'],
       (info: StudentInfo) => {
         insertOrUpdate(this.studentInfos, info);
-      }
+      },
+      this
     );
 
     this.$bus.on('student_info_removed', async (id) => {
       deleteByIndex(this.studentInfos, id);
     });
+    console.log('created');
+  }
+
+  private beforeDestroy() {
+    console.log('before destroy');
+    this.$bus.clear(this);
   }
 
   private async beforeMount() {
@@ -418,7 +436,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
       return null;
     }
 
-    return this.studentTestMarks[markIndex];
+    return this.studentTestMarks[markIndex].result;
   }
 
   private getStudentInfo(student: Student) {
@@ -499,18 +517,51 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         (info) => info.student === student.id && info.test === test.id
       );
 
-      if (value.length === 0 && markIndex >= 0) {
-        const testMark = this.studentTestMarks[markIndex];
-        try {
-          await this.$state.studentTestMarkManager.remove(testMark.id);
-          return;
-        } catch (e) {
-          this.$notify({
-            title: 'Невозможно удалить результат',
-            type: 'error'
-          });
+      if (value.length === 0) {
+        if (markIndex >= 0) {
+          const testMark = this.studentTestMarks[markIndex];
+          try {
+            await this.$state.studentTestMarkManager.remove(testMark.id);
+            return;
+          } catch (e) {
+            this.$notify({
+              title: 'Невозможно удалить результат',
+              type: 'error'
+            });
+            ++this.uniqueTestMarksKey;
+            return;
+          }
+        } else {
           return;
         }
+      }
+
+      const result = parseFloat(value);
+
+      const create = markIndex < 0;
+
+      try {
+        if (create) {
+          await this.$state.studentTestMarkManager.create(
+            new StudentTestMark({
+              test: test.id,
+              result: result,
+              student: student.id,
+              semester: this.semester.id
+            })
+          );
+        } else {
+          await this.$state.studentTestMarkManager.update({
+            ...this.studentTestMarks[markIndex],
+            result: result
+          });
+        }
+      } catch (e) {
+        this.$notify({
+          title: `Невозможно ${create ? 'создать' : 'изменить'} результат`,
+          type: 'error'
+        });
+        ++this.uniqueTestMarksKey;
       }
     });
   }
@@ -545,6 +596,21 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
   private getStudentSumm(student: Student) {
     const studentVisits = this.getStudentVisits(student);
     return studentVisits.reduce((sum, m) => sum + this.getModuleSumm(m), 0);
+  }
+
+  private getTestResult(student: Student, test: Test) {
+    const markIndex = this.studentTestMarks.findIndex(
+      (mark) => mark.student === student.id && mark.test === test.id
+    );
+
+    if (markIndex < 0) {
+      return '';
+    }
+
+    return test.convert(
+      this.studentTestMarks[markIndex].result,
+      student.gender
+    );
   }
 
   private editReceiptDate(info: StudentInfo) {

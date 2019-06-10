@@ -139,10 +139,9 @@
                   @input="(value) => onTestMarkChanged(student, test, value)"
                 ></b-form-input>
               </div>
-              <div
-                class="item"
-                :key="`test-mark-${studentIndex}-${testIndex}`"
-              ></div>
+              <div class="item" :key="`test-mark-${studentIndex}-${testIndex}`">
+                {{ getTestResult(student, test) }}
+              </div>
             </template>
           </div>
         </div>

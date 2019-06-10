@@ -57,7 +57,6 @@ export class StudentTestMarksController {
   }
 
   @Delete('/student_test_mark/:id')
-  @UseBefore(RestrictMiddleware)
   public async remove(@Param('id') id: any) {
     await this.studentTestMarks.remove(id).catch(haveDependenciesErrorHandler);
     return {};
