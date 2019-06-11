@@ -4,7 +4,7 @@
   "private": true,
   "main": "dist/index.js",
   "scripts": {
-    "build": "tslint --project . && tsc",
+    "build": "webpack",
     "serve": "cross-env NODE_ENV=development nodemon --watch 'src/**/*' -e ts,tsx --exec ts-node -r tsconfig-paths/register src/server.ts"
   },
   "dependencies": {
@@ -12,6 +12,7 @@
     "@types/moment-timezone": "^0.5.12",
     "@types/underscore": "^1.8.18",
     "class-validator": "^0.9.1",
+    "cors": "^2.8.5",
     "dotenv": "^8.0.0",
     "injection-js": "^2.2.1",
     "jsonwebtoken": "^8.5.1",
@@ -25,8 +26,11 @@
     "pg": "^7.11.0",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.7.7",
+    "ts-loader": "^6.0.2",
     "typedi": "^0.8.0",
-    "underscore": "^1.9.1"
+    "underscore": "^1.9.1",
+    "webpack": "^4.33.0",
+    "webpack-cli": "^3.3.4"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
