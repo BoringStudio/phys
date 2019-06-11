@@ -70,7 +70,6 @@ export class GroupsController {
   }
 
   @Post('/group')
-  @UseBefore(RestrictMiddleware)
   public async create(@Body() data: GroupCreationInfo) {
     const [id] = await this.groups
       .create(data)
@@ -79,7 +78,6 @@ export class GroupsController {
   }
 
   @Put('/group')
-  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: GroupEditionInfo) {
     await this.groups.update(data).catch(alreadyExistsErrorHandler);
     return {};

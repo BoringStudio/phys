@@ -6,7 +6,7 @@ import { Student } from '@/models/managers/Student';
 import { updateIfExists } from '@/models/Stuff';
 
 import Page from '@/components/Page.vue';
-import CardsList from '@/components/CardsList.vue';
+import CardsList, { PaginationProperties } from '@/components/CardsList.vue';
 import StudentModal from '@/components/StudentModal.vue';
 
 @Component({
@@ -17,23 +17,31 @@ import StudentModal from '@/components/StudentModal.vue';
   }
 })
 export default class StudentsPage extends Vue {
-  private studentsModal!: StudentModal;
+  private studentModal!: StudentModal;
+  private studentsList!: CardsList;
 
   private students: Student[] = [];
+  private studentsPagination: PaginationProperties = new PaginationProperties(
+    15
+  );
 
   private created() {
     this.$bus.on('student_updated', (student: Student) => {
       updateIfExists(this.students, student);
     });
+    this.$bus.on('students_total_changed', (total: number) => {
+      this.studentsPagination.total = total;
+    });
     this.$bus.on(['student_created', 'student_removed'], async () => {
-      this.students = await this.$state.studentManager.fetchAll();
+      await this.$state.studentManager.fetchTotalCount();
+      await this.studentsList.selectPage(this.studentsPagination.page);
     });
   }
 
   private async mounted() {
-    this.studentsModal = this.$refs['student-modal'] as StudentModal;
-    this.studentsModal.$on('submit', async (student: Student) => {
-      this.studentsModal.setInProcess(true);
+    this.studentModal = this.$refs['student-modal'] as StudentModal;
+    this.studentModal.$on('submit', async (student: Student) => {
+      this.studentModal.setInProcess(true);
 
       const create: boolean = student.id < 0;
 
@@ -44,25 +52,34 @@ export default class StudentsPage extends Vue {
           await this.$state.studentManager.update(student);
         }
 
-        this.studentsModal.setVisible(false);
+        this.studentModal.setVisible(false);
       } catch (e) {
         this.$notify({
           title: `Невозможно ${create ? 'создать' : 'изменить'} студента`,
           type: 'error'
         });
-        this.studentsModal.setInProcess(false);
+        this.studentModal.setInProcess(false);
       }
     });
 
-    this.students = await this.$state.studentManager.fetchAll();
+    this.studentsList = this.$refs['students-list'] as CardsList;
+    this.studentsList.setLoader(async (perPage: number, page: number) => {
+      this.students = await this.$state.studentManager.fetchPage(
+        this.studentsPagination.perPage,
+        page
+      );
+    });
+
+    await this.$state.studentManager.fetchTotalCount();
+    this.studentsList.selectPage(1);
   }
 
   private addStudent() {
-    this.studentsModal.show(new Student());
+    this.studentModal.show(new Student());
   }
 
   private editStudent(student: Student) {
-    this.studentsModal.show(student);
+    this.studentModal.show(student);
   }
 
   private async removeStudent(student: Student) {
