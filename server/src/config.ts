@@ -4,6 +4,6 @@ export interface IConfig {
 }
 
 export const config = {
-  port: process.env.NODE_PORT || 8001,
+  port: process.env.PORT || 8001,
   prettyLog: process.env.NODE_ENV === 'development'
 } as IConfig;
