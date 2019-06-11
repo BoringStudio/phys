@@ -6,8 +6,11 @@
   </template>
 
   <cards-list
-    :items="students"
+    ref="students-list"
+    class="h-100"
     editable
+    :items="students"
+    :properties="studentsPagination"
     @edit="editStudent"
     @remove="removeStudent"
   >
