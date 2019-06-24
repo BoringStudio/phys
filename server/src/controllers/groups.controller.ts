@@ -39,9 +39,8 @@ export class GroupsController {
 
   @Get('/groups/search')
   public async search(@QueryParams() { match, limit }: SearchParams) {
-    if (match == null || limit == null) {
-      return [];
-    }
+    match = match || '';
+    limit = limit || 10;
 
     let decoded = '';
 

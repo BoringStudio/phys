@@ -16,6 +16,8 @@
         >Подтвердить</button>
       </template>
     </b-modal>
+
+    <slot name="utility"></slot>
   </div>
 </template>
 
