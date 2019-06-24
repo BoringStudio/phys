@@ -97,6 +97,7 @@ export class StudentsController {
   }
 
   @Put('/student')
+  @UseBefore(RestrictMiddleware)
   public async update(@Body() data: StudentEditionInfo) {
     await this.students.update(data).catch(alreadyExistsErrorHandler);
     return {};
