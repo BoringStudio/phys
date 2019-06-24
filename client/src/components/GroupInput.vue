@@ -38,8 +38,6 @@ export default class GroupInput extends Vue {
       return;
     }
 
-    console.log(val, oldVal);
-
     if (val !== oldVal) {
       const group = await this.$state.groupManager.fetchOne(val);
       this.groups = [group];

@@ -56,7 +56,7 @@ export class StudentsService {
       .join(`${groupsTable} as G`, function() {
         this.on(`S.group`, `G.id`);
       })
-      .orderBy(`S.id`)
+      .orderBy([`S.surname`, `S.name`])
       .limit(limit);
 
     return query;
@@ -64,10 +64,11 @@ export class StudentsService {
 
   public getSingle(id: number) {
     return this.db(studentsTable)
-      .select('*')
-      .where({
-        id
+      .select(`${studentsTable}.*`, `${groupsTable}.name as groupName`)
+      .join(`${groupsTable}`, function() {
+        this.on(`${studentsTable}.group`, `${groupsTable}.id`);
       })
+      .where(`${studentsTable}.id`, this.db.raw('?', [id]))
       .first();
   }
 
