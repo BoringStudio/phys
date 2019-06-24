@@ -2,7 +2,7 @@
   <div id="app">
     <notifications/>
     <div class="layout" :class="{ nosidebar: $route.meta.noSidebar }">
-      <div class="toggle-sidebar-wrapper">
+      <div class="toggle-sidebar-wrapper" v-if="!$route.meta.noSidebar">
         <div
           class="toggle-sidebar"
           :class="{offset: sidebarVisible}"
