@@ -154,8 +154,8 @@
           <div class="item wider">Группа здоровья</div>
           <div class="item wider">Дата получения справки</div>
           <div class="item wide">Дневник</div>
-          <div class="item wider">Соревнования</div>
-          <div class="item wider">Личностные качества</div>
+          <div class="item wide">Соревн.</div>
+          <div class="item wide">Качества</div>
           <div class="item wider">Дата зачёта</div>
           <div class="item module">Итого</div>
         </div>
@@ -186,14 +186,14 @@
                   @input="() => updateInfo(info, false, 'diary')"
                 ></b-form-input>
               </div>
-              <div class="item wider">
+              <div class="item wide">
                 <b-form-input
                   type="number"
                   v-model.number="info.competitions"
                   @input="() => updateInfo(info, false, 'competitions')"
                 ></b-form-input>
               </div>
-              <div class="item wider">
+              <div class="item wide">
                 <b-form-input
                   type="number"
                   v-model.number="info.personalQualities"
@@ -203,7 +203,7 @@
               <div class="item wider button" @click="editExamDate(info)">
                 {{ (info.examDate && formatDate(info.examDate)) || '' }}
               </div>
-              <div class="item">
+              <div class="item module">
                 {{ getTotalStudentSumm(student) }}
               </div>
             </template>

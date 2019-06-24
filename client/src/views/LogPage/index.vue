@@ -542,7 +542,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
           await this.$state.studentTestMarkManager.create(
             new StudentTestMark({
               test: test.id,
-              result: result,
+              result,
               student: student.id,
               semester: this.semester.id
             })
@@ -550,7 +550,7 @@ export default class LogPage extends Mixins(HasDatepickerMixin) {
         } else {
           await this.$state.studentTestMarkManager.update({
             ...this.studentTestMarks[markIndex],
-            result: result
+            result
           });
         }
       } catch (e) {
