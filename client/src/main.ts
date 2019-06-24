@@ -32,11 +32,12 @@ import {
   faTimes,
   faEye,
   faEyeSlash,
-  faRedo
+  faRedo,
+  faBars
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-library.add(faEdit, faPlus, faTimes, faEye, faEyeSlash, faRedo);
+library.add(faEdit, faPlus, faTimes, faEye, faEyeSlash, faRedo, faBars);
 Vue.component('a-icon', FontAwesomeIcon);
 
 Vue.config.productionTip = false;

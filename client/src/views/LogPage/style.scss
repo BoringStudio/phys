@@ -187,25 +187,27 @@ $students-width: 425px;
 
   .tests-table {
     .title .item {
-      width: 14em;
+      width: 224px;
     }
 
     .items-row .item {
-      width: 7em;
+      width: 112px;
     }
   }
 
   .infos-table {
     .title .item,
     .items-row .item {
-      min-width: 3.5em;
+      flex-grow: 0;
+      flex-shrink: 0;
+      width: 56px;
 
       &.wide {
-        min-width: 7em;
+        width: 112px;
       }
 
       &.wider {
-        min-width: 14em;
+        width: 224px;
       }
 
       .vdp-datepicker {

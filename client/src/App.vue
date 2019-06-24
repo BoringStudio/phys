@@ -2,7 +2,17 @@
   <div id="app">
     <notifications/>
     <div class="layout" :class="{ nosidebar: $route.meta.noSidebar }">
-      <div class="sidebar">
+      <div class="toggle-sidebar-wrapper">
+        <div
+          class="toggle-sidebar"
+          :class="{offset: sidebarVisible}"
+          @click="sidebarVisible = !sidebarVisible"
+        >
+          <a-icon icon="bars"/>
+        </div>
+      </div>
+
+      <div class="sidebar" v-if="sidebarVisible">
         <div class="title pb-3 mb-3">
           <div>
             <h3>{{ formatDate(now) }}</h3>
@@ -48,6 +58,8 @@ export default class App extends Vue {
 
   private fullName: string = '';
   private pages: IPage[] = [];
+
+  private sidebarVisible: boolean = true;
 
   private created() {
     this.$bus.on('user_authorized', (user: User) => {
@@ -171,6 +183,32 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: row;
+
+  .toggle-sidebar-wrapper {
+    position: relative;
+
+    @extend .noselect;
+
+    .toggle-sidebar {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      font-size: 30px;
+      text-align: center;
+
+      top: 16px;
+
+      &.offset {
+        left: $sidebar-width - 40px;
+      }
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+      }
+    }
+  }
 
   .sidebar {
     width: $sidebar-width;
