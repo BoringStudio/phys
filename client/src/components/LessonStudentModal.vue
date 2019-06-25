@@ -17,7 +17,7 @@
     </template>
 
     <template v-slot:utility>
-      <student-modal ref="student-modal" @click="onSubmitStudent"/>
+      <student-modal ref="student-modal" @submit="onSubmitStudent"/>
     </template>
   </general-modal>
 </template>
